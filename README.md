@@ -75,8 +75,8 @@ curl -sSL https://install.python-poetry.org | python3 -
 poetry --version
 
 # Clonage du projet
-git clone <votre_repo>
-cd mlops-classification-project
+git clone https://github.com/Souley225/Customer_Churn_Project
+cd Customer_Churn_Project
 
 # Installation des dépendances
 poetry install
@@ -209,3 +209,4 @@ make test
 ## 13. Licence
 
 Le projet est distribué sous licence MIT.
+
