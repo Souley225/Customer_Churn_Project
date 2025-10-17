@@ -1,0 +1,7 @@
+raw_csv: data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+interim_dir: data/interim
+processed_dir: data/processed
+splits:
+test_size: 0.2
+val_size: 0.1
+random_state: 42

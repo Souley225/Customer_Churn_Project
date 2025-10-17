@@ -1,0 +1,32 @@
+
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "export PATH=$$HOME/.local/bin:$$PATH" >> $$GITHUB_ENV
+      - name: Install deps
+        run: |
+          $$HOME/.local/bin/poetry install
+      - name: Lint
+        run: |
+          $$HOME/.local/bin/poetry run ruff .
+          $$HOME/.local/bin/poetry run black --check .
+          $$HOME/.local/bin/poetry run isort --check-only .
+      - name: Type-check
+        run: $$HOME/.local/bin/poetry run mypy src
+      - name: Tests
+        run: $$HOME/.local/bin/poetry run pytest -q

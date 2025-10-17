@@ -1,0 +1,2 @@
+name: telco-churn-classifier
+primary_metric: val_auc

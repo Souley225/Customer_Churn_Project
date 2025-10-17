@@ -1,0 +1,19 @@
+FROM python:3.11-slim
+
+
+# Dépendances système
+RUN apt-get update && apt-get install -y --no-install-recommends \
+build-essential git curl unzip && rm -rf /var/lib/apt/lists/*
+
+
+WORKDIR /app
+COPY pyproject.toml README.md /app/
+RUN pip install --no-cache-dir poetry && poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
+
+
+COPY . /app
+ENV MLFLOW_TRACKING_URI=http://mlflow:5000
+ENV MLFLOW_EXPERIMENT_NAME=telco-churn
+
+
+CMD ["bash", "-lc", "dvc repro"]

@@ -1,0 +1,64 @@
+stages:
+  download:
+    cmd: poetry run python -m src.data.make_dataset
+    deps:
+      - src/data/make_dataset.py
+    outs:
+      - data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+
+  split:
+    cmd: >
+      poetry run python -m src.data.split_dataset
+      --csv_path data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+      --test_size 0.2
+      --val_size 0.1
+      --random_state 42
+    deps:
+      - src/data/split_dataset.py
+      - data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+    outs:
+      - data/interim/train.csv
+      - data/interim/val.csv
+      - data/interim/test.csv
+
+  features:
+    cmd: poetry run python -m src.features.build_features
+    deps:
+      - src/features/build_features.py
+      - data/interim/train.csv
+      - data/interim/val.csv
+      - data/interim/test.csv
+    outs:
+      - data/processed/X_train.npy
+      - data/processed/X_val.npy
+      - data/processed/X_test.npy
+      - data/processed/y_train.npy
+      - data/processed/y_val.npy
+      - data/processed/y_test.npy
+
+  train:
+    cmd: poetry run python -m src.models.train
+    deps:
+      - src/models/train.py
+      - data/processed/X_train.npy
+      - data/processed/X_val.npy
+      - data/processed/y_train.npy
+      - data/processed/y_val.npy
+    outs:
+      - artifacts
+    metrics:
+      - mlruns
+
+  evaluate:
+    cmd: >
+      export RUN_ID=$(ls -t mlruns/0/*/meta.yaml | head -n1 | awk -F'/' '{print $(NF-1)}') &&
+      poetry run python -m src.models.evaluate
+    deps:
+      - src/models/evaluate.py
+      - data/processed/X_test.npy
+      - data/processed/y_test.npy
+
+  register:
+    cmd: poetry run python -m src.models.register
+    deps:
+      - src/models/register.py

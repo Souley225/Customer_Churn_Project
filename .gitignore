@@ -52,7 +52,7 @@ venv.bak/
 
 # Poetry
 poetry.lock
-dvc.lock
+
 poetry.lock.hcl
 
 # ======================================================================

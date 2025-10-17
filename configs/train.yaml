@@ -1,0 +1,4 @@
+optuna:
+n_trials: 30
+mlflow:
+experiment: telco-churn

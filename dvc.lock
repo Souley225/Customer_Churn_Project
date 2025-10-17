@@ -1,0 +1,117 @@
+schema: '2.0'
+stages:
+  download:
+    cmd: poetry run python -m src.data.make_dataset
+    deps:
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: 4f9501ff6ae71a8617b6e3957638e3c4
+      size: 1112
+    outs:
+    - path: data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+  split:
+    cmd: "poetry run python -m src.data.split_dataset --csv_path data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+      --test_size 0.2 --val_size 0.1 --random_state 42\n"
+    deps:
+    - path: data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+    - path: src/data/split_dataset.py
+      hash: md5
+      md5: 920d699c93030b6d60cae79a3527786a
+      size: 1643
+    outs:
+    - path: data/interim/test.csv
+      hash: md5
+      md5: 9e66f0526220d50448059afb6e971466
+      size: 196084
+    - path: data/interim/train.csv
+      hash: md5
+      md5: d11a7d121389c2560948cbb216bede6e
+      size: 705449
+    - path: data/interim/val.csv
+      hash: md5
+      md5: 28115923b20097e88c5639a043de2810
+      size: 77274
+  features:
+    cmd: poetry run python -m src.features.build_features
+    deps:
+    - path: data/interim/test.csv
+      hash: md5
+      md5: 9e66f0526220d50448059afb6e971466
+      size: 196084
+    - path: data/interim/train.csv
+      hash: md5
+      md5: d11a7d121389c2560948cbb216bede6e
+      size: 705449
+    - path: data/interim/val.csv
+      hash: md5
+      md5: 28115923b20097e88c5639a043de2810
+      size: 77274
+    - path: src/features/build_features.py
+      hash: md5
+      md5: e0f1a2a27bcbd1680136db8aba6be6b0
+      size: 8690
+    outs:
+    - path: data/processed/X_test.npy
+      hash: md5
+      md5: 48822bfccf9a412e1e4f27d8656420f5
+      size: 439736
+    - path: data/processed/X_train.npy
+      hash: md5
+      md5: 81d1103496364341464a0c0ce2a73f25
+      size: 1581968
+    - path: data/processed/X_val.npy
+      hash: md5
+      md5: 227ea8b3db3bc7d50566c2b06c59be75
+      size: 176096
+    - path: data/processed/y_test.npy
+      hash: md5
+      md5: 228c8879c9c5a0612d039b1f2e75f12f
+      size: 11400
+    - path: data/processed/y_train.npy
+      hash: md5
+      md5: cff692a13d847284af3db70b6390f5ac
+      size: 40688
+    - path: data/processed/y_val.npy
+      hash: md5
+      md5: a040dfa3a9ffa707ebbc0e43c6711064
+      size: 4640
+  train:
+    cmd: poetry run python -m src.models.train
+    deps:
+    - path: data/processed/X_train.npy
+      hash: md5
+      md5: 81d1103496364341464a0c0ce2a73f25
+      size: 1581968
+    - path: data/processed/X_val.npy
+      hash: md5
+      md5: 227ea8b3db3bc7d50566c2b06c59be75
+      size: 176096
+    - path: data/processed/y_train.npy
+      hash: md5
+      md5: cff692a13d847284af3db70b6390f5ac
+      size: 40688
+    - path: data/processed/y_val.npy
+      hash: md5
+      md5: a040dfa3a9ffa707ebbc0e43c6711064
+      size: 4640
+    - path: src/models/train.py
+      hash: md5
+      md5: a65eafb3af8d694015f4392721b8ab34
+      size: 7172
+    outs:
+    - path: artifacts
+      hash: md5
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: mlruns
+      hash: md5
+      md5: 922630ad4d86dd609222e725d0c1b603.dir
+      size: 3479
+      nfiles: 16
