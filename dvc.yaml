@@ -50,9 +50,7 @@ stages:
       - mlruns
 
   evaluate:
-    cmd: >
-      export RUN_ID=$(ls -t mlruns/0/*/meta.yaml | head -n1 | awk -F'/' '{print $(NF-1)}') &&
-      poetry run python -m src.models.evaluate
+    cmd: poetry run python -m src.models.evaluate
     deps:
       - src/models/evaluate.py
       - data/processed/X_test.npy

@@ -15,6 +15,7 @@ Principales idées (synthèse des meilleures pratiques Kaggle/Blogs/Articles):
 Toutes les étapes sont réplicables avec Hydra et DVC.
 """
 from __future__ import annotations
+import joblib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
@@ -183,6 +184,9 @@ def build() -> None:
     X_test = preprocessor.transform(test)
 
     # Sauvegarde
+    preprocessor_path = PROCESSED_DIR / "preprocessor.joblib"
+    joblib.dump(preprocessor, preprocessor_path)
+    logger.info("Preprocessor sauvegardé dans %s", preprocessor_path)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     np.save(PROCESSED_DIR / "X_train.npy", X_train)
     np.save(PROCESSED_DIR / "X_val.npy", X_val)

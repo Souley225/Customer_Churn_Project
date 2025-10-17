@@ -54,8 +54,8 @@ stages:
       size: 77274
     - path: src/features/build_features.py
       hash: md5
-      md5: e0f1a2a27bcbd1680136db8aba6be6b0
-      size: 8690
+      md5: f48b7986ae91441c6fa41a190f0337bb
+      size: 8890
     outs:
     - path: data/processed/X_test.npy
       hash: md5
@@ -115,3 +115,25 @@ stages:
       md5: 922630ad4d86dd609222e725d0c1b603.dir
       size: 3479
       nfiles: 16
+  evaluate:
+    cmd: poetry run python -m src.models.evaluate
+    deps:
+    - path: data/processed/X_test.npy
+      hash: md5
+      md5: 48822bfccf9a412e1e4f27d8656420f5
+      size: 439736
+    - path: data/processed/y_test.npy
+      hash: md5
+      md5: 228c8879c9c5a0612d039b1f2e75f12f
+      size: 11400
+    - path: src/models/evaluate.py
+      hash: md5
+      md5: 7820a77e08b347487e527cd7bd982f27
+      size: 1355
+  register:
+    cmd: poetry run python -m src.models.register
+    deps:
+    - path: src/models/register.py
+      hash: md5
+      md5: c3e14e0e4071b11838a062f70eeed6d4
+      size: 857

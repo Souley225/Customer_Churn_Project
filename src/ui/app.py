@@ -1,16 +1,53 @@
 
 ## src/ui/app.py (Streamlit)
-
-"""UI Streamlit pour scorer interactivement.
-
-Commentaires en français.
-"""
+"""UI Streamlit pour scorer interactivement."""
 from __future__ import annotations
 import os
+import sys
+import joblib                 # 
+import pandas as pd
+import numpy as np
 import mlflow
 import streamlit as st
-import pandas as pd
 
+# Ajoute la racine au PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from src.utils.paths import PROCESSED_DIR
+
+# Charge le preprocessor
+preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
+# Colonnes complètes utilisées à l’entraînement (dans l’ordre)
+EXPECTED_COLS = [
+    'gender', 'SeniorCitizen', 'Partner', 'Dependents', 'tenure', 'PhoneService',
+    'MultipleLines', 'InternetService', 'OnlineSecurity', 'OnlineBackup',
+    'DeviceProtection', 'TechSupport', 'StreamingTV', 'StreamingMovies',
+    'Contract', 'PaperlessBilling', 'PaymentMethod', 'MonthlyCharges',
+    'TotalCharges', 'tenure_bucket', 'num_services', 'total_spend_proxy',
+    'contract_paperless'
+]
+
+# Valeurs par défaut (même traitement que le cleaner)
+DEFAULTS = {
+    'gender': 'Female',
+    'SeniorCitizen': 0,
+    'Partner': 'Yes',
+    'Dependents': 'No',
+    'PhoneService': 'Yes',
+    'MultipleLines': 'No',
+    'InternetService': 'DSL',
+    'OnlineSecurity': 'No',
+    'OnlineBackup': 'No',
+    'DeviceProtection': 'No',
+    'TechSupport': 'No',
+    'StreamingTV': 'No',
+    'StreamingMovies': 'No',
+    'PaymentMethod': 'Electronic check',
+    'tenure_bucket': '[0,6)',
+    'num_services': 0,
+    'total_spend_proxy': 0.0,
+    'contract_paperless': 'Month-to-month_1'
+}
 st.set_page_config(page_title="Telco Churn UI", layout="wide")
 st.title("Telco Customer Churn — Demo")
 
@@ -30,16 +67,20 @@ with col3:
 contract = st.selectbox("Contract", contracts)
 paperless = st.selectbox("PaperlessBilling (Yes=1/No=0)", [0, 1])
 
-if st.button("Prédire le risque de churn"):
-    sample = pd.DataFrame([
-        {
-            "tenure": tenure,
-            "MonthlyCharges": monthly,
-            "TotalCharges": total,
-            "Contract": contract,
-            "PaperlessBilling": int(paperless),
-        }
-    ])
+if  st.button("Prédire le risque de churn"):
+    # 1. création du dictionnaire COMPLET
+    raw = DEFAULTS.copy()
+    raw.update({
+        'tenure': tenure,
+        'MonthlyCharges': monthly,
+        'TotalCharges': total,
+        'Contract': contract,
+        'PaperlessBilling': int(paperless),
+    })
+    # 2. DataFrame dans le bon ordre
+    sample_raw = pd.DataFrame([{c: raw[c] for c in EXPECTED_COLS}])
+    # 3. transformation + prédiction
+    sample = preprocessor.transform(sample_raw)
     proba = model.predict_proba(sample)[:, 1][0]
     st.metric("Probabilité de churn", f"{proba:.2%}")
 
