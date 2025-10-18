@@ -15,6 +15,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from src.utils.paths import PROCESSED_DIR
 
+from src.features.build_features import TelcoCleaner   # même cleaner
+
+cleaner = TelcoCleaner()
 # Charge le preprocessor
 preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
 # Colonnes complètes utilisées à l’entraînement (dans l’ordre)
@@ -79,6 +82,8 @@ if  st.button("Prédire le risque de churn"):
     })
     # 2. DataFrame dans le bon ordre
     sample_raw = pd.DataFrame([{c: raw[c] for c in EXPECTED_COLS}])
+    # 3. Nettoyage
+    sample_raw = cleaner.transform(sample_raw)
     # 3. transformation + prédiction
     sample = preprocessor.transform(sample_raw)
     proba = model.predict_proba(sample)[:, 1][0]
