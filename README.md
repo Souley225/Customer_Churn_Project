@@ -1,6 +1,6 @@
 # Construction d'un score d'attrition: Telco Customer Churn
 
-![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)
+![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![MLflow](https://img.shields.io/badge/MLflow-tracking-orange.svg)
 ![Docker](https://img.shields.io/badge/docker-compose-2496ED.svg)
@@ -35,7 +35,7 @@ Ce projet utilise le dataset public **Telco Customer Churn** de Kaggle pour cons
 
 ?> **Variable cible**: `Churn` (Yes/No)
 
-- **Langage**: Python 3.11
+- **Langage**: Python 3.12
 - **Gestionnaire de paquets**: Poetry
 - **Suivi d'expériences**: MLflow (local ou distant)
 - **Version des données**: DVC
@@ -78,7 +78,7 @@ mlops-classification-project/
 
 !> **Attention**: Assurez-vous d'avoir tous les outils suivants installés avant de commencer.
 
-- ✅ Python 3.11 ou plus (recommandé: pyenv)
+- ✅ Python 3.12 ou plus (recommandé: pyenv)
 - ✅ Poetry
 - ✅ Git
 - ✅ DVC
@@ -91,8 +91,8 @@ mlops-classification-project/
 
 ```bash
 # Installation de Python
-pyenv install 3.11.9
-pyenv local 3.11.9
+pyenv install 3.12.0
+pyenv local 3.12.0
 ```
 
 #### 2️⃣ Installation de Poetry
