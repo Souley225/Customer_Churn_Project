@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-# Projet MLOps de Classification : Telco Customer Churn
+
+# Construction d'un score d'attrition: Telco Customer Churn
 
 ## 1. Présentation générale
 
