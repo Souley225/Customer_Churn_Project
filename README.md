@@ -12,7 +12,7 @@
 
 ## 📊 Présentation générale
 
-Ce projet utilise le dataset public **Telco Customer Churn** de Kaggle pour construire, suivre, versionner et déployer un modèle de classification de manière reproductible.
+Ce projet utilise le dataset public **Telco Customer Churn** de Kaggle pour construire, suivre, versionner et déployer un modèle de scoring de manière reproductible.
 
 ### 🛠️ Stack Technologique
 
