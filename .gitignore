@@ -1,7 +1,8 @@
 # ======================================================================
 # DONNÉES & ARTEFACTS
 # ======================================================================
-data/
+/data/              # Ignore uniquement le dossier data à la racine
+!/src/data/         # Garde le dossier src/data/ (et tout ce qu’il contient)
 artifacts/
 models/
 mlruns/
@@ -14,6 +15,9 @@ mlruns/
 *.onnx
 *.pt
 *.pth
+*.npy
+data/raw/
+
 
 # ======================================================================
 # PYTHON
