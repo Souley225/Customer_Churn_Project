@@ -6,14 +6,16 @@
 """
 from __future__ import annotations
 import os
-from typing import List, Any
+from typing import List  
+from typing import Any
 import mlflow
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 app = FastAPI(title="Telco Churn API")
 
-MODEL_URI = os.getenv("MODEL_URI", os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/None"))
+MODEL_URI = os.getenv("MODEL_URI",
+                       os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/None"))
 model = None
 
 
@@ -33,7 +35,7 @@ def load_model() -> None:
 
 
 @app.post("/predict")
-def predict(items: List[Record]) -> List[float]:
+def predict(items: list[Record]) -> list[float]:
     import pandas as pd
 
     df = pd.DataFrame([i.dict() for i in items])

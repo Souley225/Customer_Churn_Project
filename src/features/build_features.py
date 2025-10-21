@@ -44,15 +44,18 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
     def fit(self, X: pd.DataFrame, y: pd.Series | None = None):  # type: ignore[override]
         # Identifie colonnes de services (contiennent typiquement Yes/No/No internet service)
         svc_candidates = [
-            c for c in X.columns if any(k in c.lower() for k in ["phone", "internet", "security", "backup", "protection", "support", "tv", "movie", "lines"])
+            c for c in X.columns 
+            if any(k in c.lower() for k in ["phone", "internet", "security",
+                                            "backup", "protection", "support",
+                                            "tv", "movie", "lines"])
         ]
         # Retire quelques colonnes non-service connues
         blacklist = {"PhoneService", "PaperlessBilling"}
         self.service_cols_ = [c for c in svc_candidates if c not in blacklist]
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:  # type: ignore[override]
-        df = X.copy()
+    def transform(self, df_in: pd.DataFrame) -> pd.DataFrame:
+        df = df_in.copy()
         # Convertir TotalCharges (espaces -> NaN -> float)
         df["TotalCharges"] = pd.to_numeric(df["TotalCharges"].replace(" ", np.nan), errors="coerce")
 
@@ -121,7 +124,10 @@ def build() -> None:
 
     # Séparer cible
     target = "Churn"
-    y_train = (train[target] == "Yes").astype(int) if train[target].dtype == object else train[target]
+    y_train = ((train[target] == "Yes").astype(int) 
+               if train[target].dtype == object 
+               else train[target])
+    
     y_val = (val[target] == "Yes").astype(int) if val[target].dtype == object else val[target]
     y_test = (test[target] == "Yes").astype(int) if test[target].dtype == object else test[target]
 
@@ -177,18 +183,18 @@ def build() -> None:
 
     preprocessor = ColumnTransformer(transformers=transformers, remainder="drop")
 
-    X_train = preprocessor.fit_transform(train)
-    X_val = preprocessor.transform(val)
-    X_test = preprocessor.transform(test)
+    x_train = preprocessor.fit_transform(train)
+    x_val = preprocessor.transform(val)
+    x_test = preprocessor.transform(test)
 
     # Sauvegarde
     preprocessor_path = PROCESSED_DIR / "preprocessor.joblib"
     joblib.dump(preprocessor, preprocessor_path)
     logger.info("Preprocessor sauvegardé dans %s", preprocessor_path)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    np.save(PROCESSED_DIR / "X_train.npy", X_train)
-    np.save(PROCESSED_DIR / "X_val.npy", X_val)
-    np.save(PROCESSED_DIR / "X_test.npy", X_test)
+    np.save(PROCESSED_DIR / "X_train.npy", x_train)
+    np.save(PROCESSED_DIR / "X_val.npy", x_val)
+    np.save(PROCESSED_DIR / "X_test.npy", x_test)
     np.save(PROCESSED_DIR / "y_train.npy", y_train.values)
     np.save(PROCESSED_DIR / "y_val.npy", y_val.values)
     np.save(PROCESSED_DIR / "y_test.npy", y_test.values)

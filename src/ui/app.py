@@ -54,7 +54,8 @@ DEFAULTS = {
 st.set_page_config(page_title="Telco Churn UI", layout="wide")
 st.title("Telco Customer Churn — Demo")
 
-MODEL_URI = os.getenv("MODEL_URI", os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/None"))
+MODEL_URI = os.getenv("MODEL_URI", 
+                      os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/None"))
 model = mlflow.sklearn.load_model(MODEL_URI)
 
 st.sidebar.header("Caractéristiques")
@@ -98,4 +99,6 @@ if file is not None:
     df_out = df.copy()
     df_out["churn_proba"] = proba
     st.dataframe(df_out.head())
-    st.download_button("Télécharger résultats", df_out.to_csv(index=False).encode(), "predictions.csv")
+    st.download_button("Télécharger résultats", 
+                       df_out.to_csv(index=False).encode(), 
+                       "predictions.csv")

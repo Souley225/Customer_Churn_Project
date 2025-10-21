@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 from src.features.build_features import TelcoCleaner
 
-def test_cleaner_creates_features():
+def test_cleaner_creates_features() -> None:
     df = pd.DataFrame({
         "customerID": ["0001"],
         "tenure": [5],
