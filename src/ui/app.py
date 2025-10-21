@@ -95,6 +95,8 @@ st.subheader("Scoring batch")
 file = st.file_uploader("CSV avec colonnes minimales", type=["csv"])
 if file is not None:
     df = pd.read_csv(file)
+    df = cleaner.transform(df)
+    df = preprocessor.transform(df)
     proba = model.predict_proba(df)[:, 1]
     df_out = df.copy()
     df_out["churn_proba"] = proba

@@ -1,13 +1,18 @@
 
 """
-- Conversion de `TotalCharges` (souvent string avec espaces) -> float, coercition des espaces en NaN puis imputation par median. (cf. notebooks Kaggle)
-- Normalisation des catégories "No internet service" / "No phone service" en "No" pour réduire la cardinalité.
+- Conversion de `TotalCharges` (souvent string avec espaces) -> float, 
+coercition des espaces en NaN puis imputation par median. (cf. notebooks Kaggle)
+- Normalisation des catégories "No internet service" / "No phone service" en "No" 
+pour réduire la cardinalité.
 - Encodage binaire Yes/No -> 1/0 pour variables binaires.
-- Création de *tenure bins* (groupes quantiles et buckets business), très informatifs pour le churn.
+- Création de *tenure bins* (groupes quantiles et buckets business), 
+très informatifs pour le churn.
 - Comptage des services souscrits (somme de colonnes de service == Yes) -> `num_services`.
-- Interactions métier: `tenure * MonthlyCharges` (approx. dépense cumulée), interaction `Contract` x `PaperlessBilling`.
+- Interactions métier: `tenure * MonthlyCharges` (approx. dépense cumulée), 
+interaction `Contract` x `PaperlessBilling`.
 - Mise à l'échelle robuste (RobustScaler) pour numériques.
-- Encodage catégoriel One-Hot pour nominales; Ordinal pour `Contract` (Month-to-month < One year < Two year).
+- Encodage catégoriel One-Hot pour nominales; 
+Ordinal pour `Contract` (Month-to-month < One year < Two year).
 - Gestion du déséquilibre via class_weight (modèles) et option SMOTE sur train uniquement (configurable).
 
 Toutes les étapes sont réplicables avec Hydra et DVC.

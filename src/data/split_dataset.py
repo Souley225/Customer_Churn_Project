@@ -15,13 +15,18 @@ from src.utils.logging import logger
 
 
 
-def split(csv_path: str | Path, test_size: float = 0.2, val_size: float = 0.1, random_state: int = 42) -> None:
+def split(csv_path: str | Path, 
+          test_size: float = 0.2, 
+          val_size: float = 0.1, 
+          random_state: int = 42) -> None:
     """Split stratifié en train/val/test.
     val_size est fraction relative à train.
     """
     df = read_csv(csv_path)
     y = df["Churn"]
-    train_df, test_df = train_test_split(df, test_size=test_size, stratify=y, random_state=random_state)
+    train_df, test_df = train_test_split(df, test_size=test_size, 
+                                         stratify=y, 
+                                         random_state=random_state)
 
 
     # split validation à partir de train
