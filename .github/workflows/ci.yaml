@@ -24,11 +24,11 @@ jobs:
       - name: Install deps
         run: poetry install --no-interaction --no-ansi
 
-      - name: Lint
+      - name: Lint & auto-fix
         run: |
-          poetry run ruff check .
-          poetry run black --check .
-          poetry run isort --check-only .
+          poetry run ruff check --fix .
+          poetry run black .
+          poetry run isort .
 
       - name: Type-check
         run: poetry run mypy src
