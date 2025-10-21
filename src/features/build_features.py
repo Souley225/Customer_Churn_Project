@@ -1,7 +1,5 @@
 
-"""Ingénierie de caractéristiques spécifique Telco Churn.
-
-Principales idées (synthèse des meilleures pratiques Kaggle/Blogs/Articles):
+"""
 - Conversion de `TotalCharges` (souvent string avec espaces) -> float, coercition des espaces en NaN puis imputation par median. (cf. notebooks Kaggle)
 - Normalisation des catégories "No internet service" / "No phone service" en "No" pour réduire la cardinalité.
 - Encodage binaire Yes/No -> 1/0 pour variables binaires.
