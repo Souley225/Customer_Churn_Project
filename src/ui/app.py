@@ -20,8 +20,6 @@ from src.models.predict import predict_csv  # Pour le batch predict
 import requests, zipfile, io, joblib
 import  requests,  pathlib
 
-import requests, zipfile, io, joblib, streamlit as st
-
 # Colonnes complètes utilisées à l’entraînement (dans l’ordre)
 EXPECTED_COLS = [
     'gender', 'SeniorCitizen', 'Partner', 'Dependents', 'tenure', 'PhoneService',
