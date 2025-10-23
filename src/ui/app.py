@@ -19,6 +19,10 @@ from src.features.build_features import TelcoCleaner
 from src.models.predict import predict_csv  # Pour le batch predict
 import requests, zipfile, io, joblib
 import  requests,  pathlib
+# Charge le preprocessor
+from src.features.build_features import TelcoCleaner
+preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
+cleaner= TelcoCleaner()
 
 # Colonnes complètes utilisées à l’entraînement (dans l’ordre)
 EXPECTED_COLS = [
