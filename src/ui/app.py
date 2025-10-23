@@ -22,42 +22,6 @@ import  requests,  pathlib
 
 import requests, zipfile, io, joblib, streamlit as st
 
-GOOGLE_FILE_ID = "1yGarDcI4cdS6XqfOfyXcwOeqEaagqYSd"
-
-@st.cache_data(show_spinner=False)
-def load_artifacts():
-    session = requests.Session()
-    URL = "https://docs.google.com/uc?export=download"
-
-    # 1ère requête : récupérer le token de confirmation (si Google en exige un)
-    response = session.get(URL, params={"id": GOOGLE_FILE_ID}, stream=True)
-    token = None
-    for key, value in response.cookies.items():
-        if key.startswith("download_warning"):
-            token = value
-            break
-
-    # 2ème requête : téléchargement effectif (avec le token si nécessaire)
-    params = {"id": GOOGLE_FILE_ID, "confirm": token} if token else {"id": GOOGLE_FILE_ID}
-    response = session.get(URL, params=params, stream=True)
-
-    # Vérifications rapides
-    if response.headers["Content-Type"].startswith("text/html"):
-        raise RuntimeError("Contenu HTML reçu au lieu du zip – le token n’a pas fonctionné.")
-    zip_bytes = response.content
-    if len(zip_bytes) < 1_000:
-        raise RuntimeError("Fichier trop petit – téléchargement invalide.")
-
-    # Décompression dans le dossier local
-    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
-        zf.extractall("artifacts")
-
-    # Chargement des objets sérialisés
-    return (joblib.load("artifacts/preprocessor.joblib"),
-            joblib.load("artifacts/model.joblib"))
-
-preprocessor, model = load_artifacts()
-
 # Colonnes complètes utilisées à l’entraînement (dans l’ordre)
 EXPECTED_COLS = [
     'gender', 'SeniorCitizen', 'Partner', 'Dependents', 'tenure', 'PhoneService',
