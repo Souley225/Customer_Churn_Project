@@ -15,8 +15,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from src.utils.paths import PROCESSED_DIR
 
-from src.features.build_features import TelcoCleaner   # même cleaner
-
+from src.features.build_features import TelcoCleaner   
+from src.models.predict import predict_csv  # Pour le batch predict
 cleaner = TelcoCleaner()
 # Charge le preprocessor
 preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
@@ -97,7 +97,7 @@ if file is not None:
     df = pd.read_csv(file)
     df = cleaner.transform(df)
     df = preprocessor.transform(df)
-    proba = model.predict_proba(df)[:, 1]
+    proba = model.predict_csv(df)[:, 1]
     df_out = df.copy()
     df_out["churn_proba"] = proba
     st.dataframe(df_out.head())
