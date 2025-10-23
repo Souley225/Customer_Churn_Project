@@ -84,10 +84,10 @@ if  st.button("Prédire le risque de churn"):
     # 2. DataFrame dans le bon ordre
     sample_raw = pd.DataFrame([{c: raw[c] for c in EXPECTED_COLS}])
     # 3. Nettoyage
-    sample_raw = cleaner.transform(sample_raw)
+    sample_clean = cleaner.transform(sample_raw)
     # 3. transformation + prédiction
-    sample = preprocessor.transform(sample_raw)
-    proba = model.predict_proba(sample)[:, 1][0]
+    sample_proc = preprocessor.transform(sample_clean)
+    proba = model.predict_proba(sample_proc)[:, 1][0]
     st.metric("Probabilité de churn", f"{proba:.2%}")
 
 st.markdown("---")
@@ -95,9 +95,9 @@ st.subheader("Scoring batch")
 file = st.file_uploader("CSV avec colonnes minimales", type=["csv"])
 if file is not None:
     df = pd.read_csv(file)
-    df = cleaner.transform(df)
-    df = preprocessor.transform(df)
-    proba = model.predict_csv(df)[:, 1]
+    df_clean = cleaner.transform(df)
+    df_proc = preprocessor.transform(df_clean)
+    proba = model.predict_proba(df_proc)[:, 1]
     df_out = df.copy()
     df_out["churn_proba"] = proba
     st.dataframe(df_out.head())
