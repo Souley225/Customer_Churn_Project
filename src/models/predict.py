@@ -6,13 +6,22 @@
 from __future__ import annotations
 import os
 import pandas as pd
+import joblib
 import mlflow
+from src.features.build_features import TelcoCleaner
+from src.utils.paths import PROCESSED_DIR
+# Charge le preprocessor
+preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
+cleaner = TelcoCleaner()
 
 
 def predict_csv(input_csv: str, model_uri: str, output_csv: str) -> None:
     model = mlflow.sklearn.load_model(model_uri)
     df = pd.read_csv(input_csv)
-    # Ici, on suppose que le preprocessing est déjà appliqué si modèle le nécessite
+    # Nettoyage + features dérivées
+    df = cleaner.transform(df)
+    # Préprocessing
+    df = preprocessor.transform(df)
     proba = model.predict_proba(df)[:, 1]
     out = df.copy()
     out["churn_proba"] = proba
