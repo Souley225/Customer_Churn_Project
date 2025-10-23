@@ -21,8 +21,11 @@ import requests, zipfile, io, joblib
 
 @st.cache_data
 def load_artifacts():
-    url = "https://drive.google.com/file/d/1yGarDcI4cdS6XqfOfyXcwOeqEaagqYSd/view?usp=drive_link"
-    z = zipfile.ZipFile(io.BytesIO(requests.get(url).content))
+    file_id = "1yGarDcI4cdS6XqfOfyXcwOeqEaagqYSd"
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    r = requests.get(url, allow_redirects=True) 
+    r = "https://drive.google.com/file/d/1yGarDcI4cdS6XqfOfyXcwOeqEaagqYSd/view?usp=drive_link"
+    z = zipfile.ZipFile(io.BytesIO(requests.get(r).content))
     z.extractall("artifacts")
     return joblib.load("artifacts/preprocessor.joblib"), joblib.load("artifacts/model.joblib")
 
