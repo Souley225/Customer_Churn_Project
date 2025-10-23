@@ -17,6 +17,16 @@ from src.utils.paths import PROCESSED_DIR
 
 from src.features.build_features import TelcoCleaner   
 from src.models.predict import predict_csv  # Pour le batch predict
+import requests, zipfile, io, joblib
+
+@st.cache_data
+def load_artifacts():
+    url = "https://drive.google.com/file/d/1yGarDcI4cdS6XqfOfyXcwOeqEaagqYSd/view?usp=drive_link"
+    z = zipfile.ZipFile(io.BytesIO(requests.get(url).content))
+    z.extractall("artifacts")
+    return joblib.load("artifacts/preprocessor.joblib"), joblib.load("artifacts/model.joblib")
+
+preprocessor, model = load_artifacts()
 cleaner = TelcoCleaner()
 # Charge le preprocessor
 preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
