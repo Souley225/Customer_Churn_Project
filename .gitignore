@@ -4,7 +4,7 @@
 /data/              # Ignore uniquement le dossier data à la racine
 !/src/data/         # Garde le dossier src/data/ (et tout ce qu’il contient)
 artifacts/
-models/
+
 mlruns/
 .dvc/cache/
 .dvc/tmp/
