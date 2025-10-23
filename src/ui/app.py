@@ -18,21 +18,30 @@ from src.utils.paths import PROCESSED_DIR
 from src.features.build_features import TelcoCleaner   
 from src.models.predict import predict_csv  # Pour le batch predict
 import requests, zipfile, io, joblib
+import  requests,  pathlib
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def load_artifacts():
+    # 1. télécharger le zip depuis Google Drive
     file_id = "1yGarDcI4cdS6XqfOfyXcwOeqEaagqYSd"
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    r = requests.get(url, allow_redirects=True) 
-    r = "https://drive.google.com/file/d/1yGarDcI4cdS6XqfOfyXcwOeqEaagqYSd/view?usp=drive_link"
-    z = zipfile.ZipFile(io.BytesIO(requests.get(r).content))
-    z.extractall("artifacts")
-    return joblib.load("artifacts/preprocessor.joblib"), joblib.load("artifacts/model.joblib")
+
+    resp = requests.get(url, timeout=60)
+    resp.raise_for_status()                       
+    if len(resp.content) < 1_000:                 
+        raise RuntimeError("Download too small – probably hit a virus-scan page")
+
+    # 3. extraire dans un dossier temporaire
+    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+        zf.extractall("artifacts")                
+
+    # 4. charger les artefacts
+    return (joblib.load("artifacts/preprocessor.joblib"),
+            joblib.load("artifacts/model.joblib"))
 
 preprocessor, model = load_artifacts()
 cleaner = TelcoCleaner()
-# Charge le preprocessor
-preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
+
 # Colonnes complètes utilisées à l’entraînement (dans l’ordre)
 EXPECTED_COLS = [
     'gender', 'SeniorCitizen', 'Partner', 'Dependents', 'tenure', 'PhoneService',
