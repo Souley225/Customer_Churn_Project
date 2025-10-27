@@ -1,7 +1,6 @@
 # ======================================================================
 # DONNÉES & ARTEFACTS
 # ======================================================================
-/data/              # Ignore uniquement le dossier data à la racine
 !/src/data/         # Garde le dossier src/data/ (et tout ce qu’il contient)
 artifacts/
 
@@ -18,6 +17,8 @@ mlruns/
 *.npy
 data/raw/
 *.zip
+*.npy
+*.claude
 
 
 # ======================================================================
@@ -121,3 +122,5 @@ docker-compose.override.yml
 # ======================================================================
 *.log
 logs/
+/artifacts
+/mlruns

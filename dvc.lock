@@ -5,8 +5,8 @@ stages:
     deps:
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 4f9501ff6ae71a8617b6e3957638e3c4
-      size: 1112
+      md5: 7aba172973c1f9fb771c9782fbc5d22b
+      size: 2047
     outs:
     - path: data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
       hash: md5
@@ -22,8 +22,8 @@ stages:
       size: 977501
     - path: src/data/split_dataset.py
       hash: md5
-      md5: 920d699c93030b6d60cae79a3527786a
-      size: 1643
+      md5: 2147b87e00334c5a753a7c3ec4939e16
+      size: 1765
     outs:
     - path: data/interim/test.csv
       hash: md5
@@ -54,8 +54,8 @@ stages:
       size: 77274
     - path: src/features/build_features.py
       hash: md5
-      md5: f48b7986ae91441c6fa41a190f0337bb
-      size: 8890
+      md5: bc712d1091f59e95f2c755e5809e3714
+      size: 9081
     outs:
     - path: data/processed/X_test.npy
       hash: md5
@@ -69,6 +69,14 @@ stages:
       hash: md5
       md5: 227ea8b3db3bc7d50566c2b06c59be75
       size: 176096
+    - path: data/processed/cleaner.joblib
+      hash: md5
+      md5: bf71fc7cb4e39c6035b3ff3a6c9e37c5
+      size: 228
+    - path: data/processed/preprocessor.joblib
+      hash: md5
+      md5: 61f161cc2d847f2105ba60ddc6f481e1
+      size: 6821
     - path: data/processed/y_test.npy
       hash: md5
       md5: 228c8879c9c5a0612d039b1f2e75f12f
@@ -102,8 +110,8 @@ stages:
       size: 4640
     - path: src/models/train.py
       hash: md5
-      md5: a65eafb3af8d694015f4392721b8ab34
-      size: 7172
+      md5: 4fb1e6f1b17d0d6aa89cff48ba2e6aa8
+      size: 7515
     outs:
     - path: artifacts
       hash: md5
@@ -112,9 +120,9 @@ stages:
       nfiles: 0
     - path: mlruns
       hash: md5
-      md5: 922630ad4d86dd609222e725d0c1b603.dir
-      size: 3479
-      nfiles: 16
+      md5: 5800e9411ac507708af03a44e5e0e228.dir
+      size: 3520
+      nfiles: 17
   evaluate:
     cmd: poetry run python -m src.models.evaluate
     deps:
