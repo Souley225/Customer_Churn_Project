@@ -56,8 +56,7 @@ env.bak/
 venv.bak/
 
 # Poetry
-poetry.lock
-
+# Note: poetry.lock DOIT être commité pour garantir la reproductibilité
 poetry.lock.hcl
 
 # ======================================================================

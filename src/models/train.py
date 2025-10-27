@@ -110,7 +110,10 @@ def objective(trial: optuna.Trial) -> float:
     auc = float(roc_auc_score(y_val, proba))
     f1 = float(f1_score(y_val, preds))
     ap = float(average_precision_score(y_val, proba))
-    optuna.report = {"auc": auc, "f1": f1, "ap": ap}
+    # Sauvegarde des métriques comme user attributes
+    trial.set_user_attr("val_auc", auc)
+    trial.set_user_attr("val_f1", f1)
+    trial.set_user_attr("val_ap", ap)
     return auc
 
 
@@ -124,42 +127,47 @@ def main() -> None:
         best_auc = study.best_value
         mlflow.log_metric("best_auc", best_auc)
 
-        # Réentraîner le meilleur modèle et le logguer dans MLflow
+        # Réentraîner le meilleur modèle sur train+val
         best_params = study.best_trial.params
         model_choice = best_params.get("model", "logreg")
-        # Re-construire modèle comme dans objective
-        os.environ["OPTUNA_TRIALS"] = "0"  # pour éviter récursions
-        # Petite duplication acceptable pour clarté
-        X_train, X_val, y_train, y_val = load_arrays()
-        classes = np.unique(y_train)
-        cw = {int(c): float(w) for c, w in zip(classes,
-               (np.bincount(y_train).max() / np.bincount(y_train)).tolist())}
 
+        X_train, X_val, y_train, y_val = load_arrays()
+
+        # Calcul des class weights de manière cohérente avec objective
+        classes = np.unique(y_train)
+        cw = compute_class_weight(class_weight="balanced", classes=classes, y=y_train)
+        class_weight_dict = {int(c): float(w) for c, w in zip(classes, cw)}
+
+        # Construction du modèle final avec les meilleurs paramètres
         if model_choice == "lightgbm" and lgb:
-            clf = lgb.LGBMClassifier(**{k: v for k, v in best_params.items() if k != "model"}, class_weight=cw)
+            clf = lgb.LGBMClassifier(**{k: v for k, v in best_params.items() if k != "model"},
+                                    class_weight=class_weight_dict)
         elif model_choice == "xgboost" and xgb:
             params = {k: v for k, v in best_params.items() if k != "model"}
             params.setdefault("eval_metric", "auc")
-            clf = xgb.XGBClassifier(**params, scale_pos_weight=cw.get(1, 1.0))
+            clf = xgb.XGBClassifier(**params, scale_pos_weight=class_weight_dict.get(1, 1.0))
         elif model_choice == "catboost" and CatBoostClassifier:
             params = {k: v for k, v in best_params.items() if k != "model"}
-            clf = CatBoostClassifier(**params, verbose=False)
+            cw_val = [class_weight_dict.get(0, 1.0), class_weight_dict.get(1, 1.0)]
+            clf = CatBoostClassifier(**params, class_weights=cw_val, verbose=False)
         else:
             C = best_params.get("C", 1.0)
-            clf = LogisticRegression(C=C, max_iter=2000, n_jobs=-1, class_weight=cw)
+            clf = LogisticRegression(C=C, max_iter=2000, n_jobs=-1, class_weight=class_weight_dict)
 
-        clf.fit(np.vstack([X_train, X_val]), np.hstack([y_train, y_val]))
+        # Entraînement final sur train+val combinés
+        X_combined = np.vstack([X_train, X_val])
+        y_combined = np.hstack([y_train, y_val])
+        clf.fit(X_combined, y_combined)
+
         mlflow.sklearn.log_model(clf, artifact_path="model")
-       
+
         artifacts_dir = PROJECT_ROOT / "artifacts"
         artifacts_dir.mkdir(exist_ok=True)
 
-        # Log métriques finales sur val
-        proba = clf.predict_proba(X_val)[:, 1]
-        preds = (proba >= 0.5).astype(int)
-        mlflow.log_metric("val_auc", float(roc_auc_score(y_val, proba)))
-        mlflow.log_metric("val_f1", float(f1_score(y_val, preds)))
-        mlflow.log_metric("val_ap", float(average_precision_score(y_val, proba)))
+        # Log des métriques finales (best trial sur val)
+        mlflow.log_metric("val_auc", study.best_trial.user_attrs["val_auc"])
+        mlflow.log_metric("val_f1", study.best_trial.user_attrs["val_f1"])
+        mlflow.log_metric("val_ap", study.best_trial.user_attrs["val_ap"])
 
         logger.info(f"Run MLflow: {run.info.run_id}")
 

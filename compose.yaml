@@ -28,7 +28,7 @@ services:
       dockerfile: docker/Dockerfile.app
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
-      - MLFLOW_MODEL_URI=models:/telco-churn-classifier/None
+      - MLFLOW_MODEL_URI=models:/telco-churn-classifier/Production
     depends_on:
       - mlflow
     ports:

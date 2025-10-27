@@ -35,6 +35,8 @@ stages:
       - data/processed/y_train.npy
       - data/processed/y_val.npy
       - data/processed/y_test.npy
+      - data/processed/preprocessor.joblib
+      - data/processed/cleaner.joblib
 
   train:
     cmd: poetry run python -m src.models.train

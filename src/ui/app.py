@@ -1,12 +1,10 @@
-
 ## src/ui/app.py (Streamlit)
 """UI Streamlit pour scorer interactivement."""
 from __future__ import annotations
 import os
 import sys
-import joblib                 # 
+import joblib
 import pandas as pd
-import numpy as np
 import mlflow
 import streamlit as st
 
@@ -14,27 +12,21 @@ import streamlit as st
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from src.utils.paths import PROCESSED_DIR
-
-from src.features.build_features import TelcoCleaner   
-from src.models.predict import predict_csv  # Pour le batch predict
-import requests, zipfile, io, joblib
-import  requests,  pathlib
-# Charge le preprocessor
 from src.features.build_features import TelcoCleaner
-preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
-cleaner= TelcoCleaner()
 
-# Colonnes complètes utilisées à l’entraînement (dans l’ordre)
-EXPECTED_COLS = [
+# Charge le preprocessor, le cleaner fitté et le modèle au démarrage
+preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
+cleaner = joblib.load(PROCESSED_DIR / "cleaner.joblib")
+
+# Colonnes RAW attendues (avant transformation par TelcoCleaner)
+RAW_COLS = [
     'gender', 'SeniorCitizen', 'Partner', 'Dependents', 'tenure', 'PhoneService',
     'MultipleLines', 'InternetService', 'OnlineSecurity', 'OnlineBackup',
     'DeviceProtection', 'TechSupport', 'StreamingTV', 'StreamingMovies',
-    'Contract', 'PaperlessBilling', 'PaymentMethod', 'MonthlyCharges',
-    'TotalCharges', 'tenure_bucket', 'num_services', 'total_spend_proxy',
-    'contract_paperless'
+    'Contract', 'PaperlessBilling', 'PaymentMethod', 'MonthlyCharges', 'TotalCharges'
 ]
 
-# Valeurs par défaut (même traitement que le cleaner)
+# Valeurs par défaut pour les features non saisies
 DEFAULTS = {
     'gender': 'Female',
     'SeniorCitizen': 0,
@@ -50,16 +42,12 @@ DEFAULTS = {
     'StreamingTV': 'No',
     'StreamingMovies': 'No',
     'PaymentMethod': 'Electronic check',
-    'tenure_bucket': '[0,6)',
-    'num_services': 0,
-    'total_spend_proxy': 0.0,
-    'contract_paperless': 'Month-to-month_1'
 }
 st.set_page_config(page_title="Telco Churn UI", layout="wide")
 st.title("Telco Customer Churn — Demo")
 
-MODEL_URI = os.getenv("MODEL_URI", 
-                      os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/None"))
+MODEL_URI = os.getenv("MODEL_URI",
+                      os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/Production"))
 model = mlflow.sklearn.load_model(MODEL_URI)
 
 st.sidebar.header("Caractéristiques")
@@ -73,38 +61,39 @@ with col3:
     total = st.number_input("TotalCharges", 0.0, 10000.0, 0.0)
 
 contract = st.selectbox("Contract", contracts)
-paperless = st.selectbox("PaperlessBilling (Yes=1/No=0)", [0, 1])
+paperless = st.selectbox("PaperlessBilling", ["Yes", "No"])
 
-if  st.button("Prédire le risque de churn"):
-    # 1. création du dictionnaire COMPLET
+if st.button("Prédire le risque de churn"):
+    # Création du dictionnaire avec features RAW
     raw = DEFAULTS.copy()
     raw.update({
-        'tenure': tenure,
-        'MonthlyCharges': monthly,
-        'TotalCharges': total,
+        'tenure': int(tenure),
+        'MonthlyCharges': float(monthly),
+        'TotalCharges': str(total) if total > 0 else " ",
         'Contract': contract,
-        'PaperlessBilling': int(paperless),
+        'PaperlessBilling': paperless,
     })
-    # 2. DataFrame dans le bon ordre
-    sample_raw = pd.DataFrame([{c: raw[c] for c in EXPECTED_COLS}])
-    # 3. Nettoyage
+    # DataFrame avec colonnes RAW uniquement
+    sample_raw = pd.DataFrame([{c: raw[c] for c in RAW_COLS}])
+
+    # Application du pipeline complet: cleaner -> preprocessor -> modèle
     sample_clean = cleaner.transform(sample_raw)
-    # 3. transformation + prédiction
     sample_proc = preprocessor.transform(sample_clean)
     proba = model.predict_proba(sample_proc)[:, 1][0]
     st.metric("Probabilité de churn", f"{proba:.2%}")
 
 st.markdown("---")
 st.subheader("Scoring batch")
-file = st.file_uploader("CSV avec colonnes minimales", type=["csv"])
+file = st.file_uploader("CSV avec colonnes client complètes", type=["csv"])
 if file is not None:
     df = pd.read_csv(file)
+    # Application du pipeline complet
     df_clean = cleaner.transform(df)
     df_proc = preprocessor.transform(df_clean)
     proba = model.predict_proba(df_proc)[:, 1]
     df_out = df.copy()
     df_out["churn_proba"] = proba
     st.dataframe(df_out.head())
-    st.download_button("Télécharger résultats", 
-                       df_out.to_csv(index=False).encode(), 
+    st.download_button("Télécharger résultats",
+                       df_out.to_csv(index=False).encode(),
                        "predictions.csv")

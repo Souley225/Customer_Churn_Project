@@ -192,10 +192,13 @@ def build() -> None:
     x_val = preprocessor.transform(val)
     x_test = preprocessor.transform(test)
 
-    # Sauvegarde
+    # Sauvegarde du preprocessor ET du cleaner fitté
     preprocessor_path = PROCESSED_DIR / "preprocessor.joblib"
+    cleaner_path = PROCESSED_DIR / "cleaner.joblib"
     joblib.dump(preprocessor, preprocessor_path)
+    joblib.dump(cleaner, cleaner_path)
     logger.info("Preprocessor sauvegardé dans %s", preprocessor_path)
+    logger.info("Cleaner sauvegardé dans %s", cleaner_path)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     np.save(PROCESSED_DIR / "X_train.npy", x_train)
     np.save(PROCESSED_DIR / "X_val.npy", x_val)
