@@ -9,6 +9,8 @@ import joblib
 import mlflow
 import pandas as pd
 
+# Import nécessaire pour le dépickling de cleaner.joblib
+from src.features.build_features import TelcoCleaner  # noqa: F401
 from src.utils.paths import PROCESSED_DIR
 
 # Charge le preprocessor et cleaner

@@ -15,6 +15,8 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+# Import nécessaire pour le dépickling de cleaner.joblib
+from src.features.build_features import TelcoCleaner  # noqa: F401
 from src.utils.paths import PROCESSED_DIR
 
 app = FastAPI(title="Telco Churn API")

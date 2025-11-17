@@ -13,6 +13,8 @@ import streamlit as st
 # Ajoute la racine au PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
+# Import nécessaire pour le dépickling de cleaner.joblib
+from src.features.build_features import TelcoCleaner  # noqa: F401
 from src.utils.paths import PROCESSED_DIR
 
 # Chargement du preprocessor et cleaner depuis PROCESSED_DIR
