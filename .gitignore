@@ -10,7 +10,6 @@ mlruns/
 *.csv
 
 # Exclusion par défaut des artefacts de modèle
-*.joblib
 *.h5
 *.onnx
 *.pt
