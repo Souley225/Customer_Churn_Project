@@ -4,19 +4,33 @@
 - Utilise un modèle chargé depuis registry ou runs
 """
 from __future__ import annotations
-import os
-import pandas as pd
+
 import joblib
 import mlflow
-from src.features.build_features import TelcoCleaner
+import pandas as pd
+
 from src.utils.paths import PROCESSED_DIR
-# Charge le preprocessor
+
+# Charge le preprocessor et cleaner
 preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
-cleaner = TelcoCleaner()
+cleaner = joblib.load(PROCESSED_DIR / "cleaner.joblib")
 
 
 def predict_csv(input_csv: str, model_uri: str, output_csv: str) -> None:
-    model = mlflow.sklearn.load_model(model_uri)
+    """Prédiction batch avec fallback MLflow -> PROCESSED_DIR."""
+    # Chargement du modèle avec fallback
+    try:
+        model = mlflow.sklearn.load_model(model_uri)
+        print(f"✓ Modèle chargé depuis MLflow: {model_uri}")
+    except Exception as e:
+        print(f"⚠ Échec chargement MLflow ({model_uri}): {e}")
+        # Fallback: charger le modèle depuis PROCESSED_DIR
+        model_path = PROCESSED_DIR / "model.joblib"
+        if not model_path.exists():
+            raise FileNotFoundError(f"Modèle non trouvé ni dans MLflow ni dans {model_path}") from e
+        model = joblib.load(model_path)
+        print(f"✓ Modèle chargé depuis fallback: {model_path}")
+
     df = pd.read_csv(input_csv)
     # Nettoyage + features dérivées
     df = cleaner.transform(df)
@@ -30,6 +44,7 @@ def predict_csv(input_csv: str, model_uri: str, output_csv: str) -> None:
 
 if __name__ == "__main__":
     import argparse
+
     p = argparse.ArgumentParser()
     p.add_argument("--input_csv", required=True)
     p.add_argument("--model_uri", required=True)

@@ -1,37 +1,39 @@
-
 """
-- Conversion de `TotalCharges` (souvent string avec espaces) -> float, 
+- Conversion de `TotalCharges` (souvent string avec espaces) -> float,
 coercition des espaces en NaN puis imputation par median. (cf. notebooks Kaggle)
-- Normalisation des catégories "No internet service" / "No phone service" en "No" 
+- Normalisation des catégories "No internet service" / "No phone service" en "No"
 pour réduire la cardinalité.
 - Encodage binaire Yes/No -> 1/0 pour variables binaires.
-- Création de *tenure bins* (groupes quantiles et buckets business), 
+- Création de *tenure bins* (groupes quantiles et buckets business),
 très informatifs pour le churn.
 - Comptage des services souscrits (somme de colonnes de service == Yes) -> `num_services`.
-- Interactions métier: `tenure * MonthlyCharges` (approx. dépense cumulée), 
+- Interactions métier: `tenure * MonthlyCharges` (approx. dépense cumulée),
 interaction `Contract` x `PaperlessBilling`.
 - Mise à l'échelle robuste (RobustScaler) pour numériques.
-- Encodage catégoriel One-Hot pour nominales; 
+- Encodage catégoriel One-Hot pour nominales;
 Ordinal pour `Contract` (Month-to-month < One year < Two year).
-- Gestion du déséquilibre via class_weight (modèles) et option SMOTE sur train uniquement (configurable).
+- Gestion du déséquilibre via class_weight (modèles) et option SMOTE
+sur train uniquement (configurable).
 
 Toutes les étapes sont réplicables avec Hydra et DVC.
 """
+
 from __future__ import annotations
-import joblib
+
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Tuple
+
+import joblib
 import numpy as np
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, RobustScaler
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
 from sklearn.base import BaseEstimator, TransformerMixin
-from src.utils.paths import INTERIM_DIR, PROCESSED_DIR
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, RobustScaler
+
 from src.utils.io import read_csv, to_csv
 from src.utils.logging import logger
+from src.utils.paths import INTERIM_DIR, PROCESSED_DIR
 
 
 class TelcoCleaner(BaseEstimator, TransformerMixin):
@@ -42,17 +44,29 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
     - Crée des features dérivées: tenure buckets, num_services, total_spend_proxy
     """
 
-    def __init__(self, tenure_bins: Tuple[int, ...] = (0, 6, 12, 24, 48, 72)):
+    def __init__(self, tenure_bins: tuple[int, ...] = (0, 6, 12, 24, 48, 72)) -> None:
         self.tenure_bins = tenure_bins
         self.service_cols_: list[str] = []
 
-    def fit(self, X: pd.DataFrame, y: pd.Series | None = None):  # type: ignore[override]
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> TelcoCleaner:  # noqa: N803
         # Identifie colonnes de services (contiennent typiquement Yes/No/No internet service)
         svc_candidates = [
-            c for c in X.columns 
-            if any(k in c.lower() for k in ["phone", "internet", "security",
-                                            "backup", "protection", "support",
-                                            "tv", "movie", "lines"])
+            c
+            for c in X.columns
+            if any(
+                k in c.lower()
+                for k in [
+                    "phone",
+                    "internet",
+                    "security",
+                    "backup",
+                    "protection",
+                    "support",
+                    "tv",
+                    "movie",
+                    "lines",
+                ]
+            )
         ]
         # Retire quelques colonnes non-service connues
         blacklist = {"PhoneService", "PaperlessBilling"}
@@ -69,9 +83,7 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
         df = df.replace(replace_vals)
 
         # Binariser Yes/No -> 1/0 pour colonnes clairement binaires
-        bin_cols = [
-            c for c in df.columns if df[c].dropna().isin(["Yes", "No"]).all()
-        ]
+        bin_cols = [c for c in df.columns if df[c].dropna().isin(["Yes", "No"]).all()]
         for c in bin_cols:
             df[c] = (df[c] == "Yes").astype(int)
 
@@ -82,7 +94,7 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
         # Créer tenure buckets
         if "tenure" in df.columns:
             bins = list(self.tenure_bins) + [np.inf]
-            labels = [f"[{bins[i]},{bins[i+1]})" for i in range(len(bins)-1)]
+            labels = [f"[{bins[i]},{bins[i+1]})" for i in range(len(bins) - 1)]
             df["tenure_bucket"] = pd.cut(df["tenure"], bins=bins, labels=labels, right=False)
 
         # Compter le nombre de services actifs (Yes)
@@ -112,7 +124,7 @@ class FeatureConfig:
 
 def build() -> None:
     """Construit X/y transformés et sauvegarde les splits traités.
-    
+
     - Applique TelcoCleaner
     - Prépare ColumnTransformer (num -> imputer+scaler, cat->imputer+OneHot, contract->ordinal)
     - Sauvegarde X_*.npy et y_*.npy + CSV transformés pour audit
@@ -129,10 +141,10 @@ def build() -> None:
 
     # Séparer cible
     target = "Churn"
-    y_train = ((train[target] == "Yes").astype(int) 
-               if train[target].dtype == object 
-               else train[target])
-    
+    y_train = (
+        (train[target] == "Yes").astype(int) if train[target].dtype == object else train[target]
+    )
+
     y_val = (val[target] == "Yes").astype(int) if val[target].dtype == object else val[target]
     y_test = (test[target] == "Yes").astype(int) if test[target].dtype == object else test[target]
 
@@ -217,4 +229,3 @@ def build() -> None:
 
 if __name__ == "__main__":
     build()
-

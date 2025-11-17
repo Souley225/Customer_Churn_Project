@@ -6,21 +6,23 @@
 - Expose /predict pour scoring unitaire ou batch
 """
 from __future__ import annotations
+
 import os
+
 import joblib
-from pathlib import Path
 import mlflow
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import pandas as pd
-from src.features.build_features import TelcoCleaner
+
 from src.utils.paths import PROCESSED_DIR
 
 app = FastAPI(title="Telco Churn API")
 
 # Utiliser version Production par défaut, ou dernière version disponible
-MODEL_URI = os.getenv("MODEL_URI",
-                       os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/Production"))
+MODEL_URI = os.getenv(
+    "MODEL_URI", os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/Production")
+)
 model = None
 preprocessor = None
 cleaner = None
@@ -28,6 +30,7 @@ cleaner = None
 
 class Record(BaseModel):
     """Schéma complet des features d'entrée (données brutes client)."""
+
     gender: str
     SeniorCitizen: int
     Partner: str
@@ -51,10 +54,29 @@ class Record(BaseModel):
 
 @app.on_event("startup")
 def load_artifacts() -> None:
-    """Charge le modèle MLflow, le preprocessor et le cleaner."""
+    """Charge le modèle MLflow, le preprocessor et le cleaner.
+
+    Stratégie de fallback:
+    - Essaie de charger le modèle depuis MLflow registry
+    - Si échec, charge model.joblib depuis PROCESSED_DIR
+    """
     global model, preprocessor, cleaner
+
+    # Chargement du modèle avec fallback
     try:
         model = mlflow.sklearn.load_model(MODEL_URI)
+        print(f"✓ Modèle chargé depuis MLflow: {MODEL_URI}")
+    except Exception as e:
+        print(f"⚠ Échec chargement MLflow ({MODEL_URI}): {e}")
+        # Fallback: charger le modèle depuis PROCESSED_DIR
+        model_path = PROCESSED_DIR / "model.joblib"
+        if not model_path.exists():
+            raise FileNotFoundError(f"Modèle non trouvé ni dans MLflow ni dans {model_path}") from e
+        model = joblib.load(model_path)
+        print(f"✓ Modèle chargé depuis fallback: {model_path}")
+
+    # Chargement du preprocessor et cleaner
+    try:
         preprocessor_path = PROCESSED_DIR / "preprocessor.joblib"
         cleaner_path = PROCESSED_DIR / "cleaner.joblib"
 
@@ -65,8 +87,9 @@ def load_artifacts() -> None:
 
         preprocessor = joblib.load(preprocessor_path)
         cleaner = joblib.load(cleaner_path)
+        print(f"✓ Preprocessor et cleaner chargés depuis {PROCESSED_DIR}")
     except Exception as e:
-        raise RuntimeError(f"Erreur chargement artefacts: {e}")
+        raise RuntimeError(f"Erreur chargement artefacts: {e}") from e
 
 
 @app.post("/predict")
@@ -86,10 +109,10 @@ def predict(items: list[Record]) -> list[float]:
         df_clean = cleaner.transform(df)
 
         # Application du preprocessing
-        X = preprocessor.transform(df_clean)
+        x_transformed = preprocessor.transform(df_clean)
 
         # Prédiction
-        proba = model.predict_proba(X)[:, 1].tolist()
+        proba = model.predict_proba(x_transformed)[:, 1].tolist()
         return proba
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erreur prédiction: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erreur prédiction: {str(e)}") from e

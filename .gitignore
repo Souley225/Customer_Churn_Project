@@ -1,14 +1,15 @@
 # ======================================================================
 # DONNÉES & ARTEFACTS
 # ======================================================================
-!/src/data/         # Garde le dossier src/data/ (et tout ce qu’il contient)
+!/src/data/         # Garde le dossier src/data/ (et tout ce qu'il contient)
 artifacts/
 
 mlruns/
 .dvc/cache/
 .dvc/tmp/
 *.csv
-*.pkl
+
+# Exclusion par défaut des artefacts de modèle
 *.joblib
 *.h5
 *.onnx
@@ -17,8 +18,10 @@ mlruns/
 *.npy
 data/raw/
 *.zip
-*.npy
 *.claude
+
+# Exception: inclure les artefacts de fallback pour déploiement
+!data/processed/*.joblib
 
 
 # ======================================================================
@@ -56,8 +59,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# Poetry
-# Note: poetry.lock DOIT être commité pour garantir la reproductibilité
 poetry.lock.hcl
 
 # ======================================================================
