@@ -1,0 +1,33 @@
+# Dépendances de production pour déploiement Render
+# Généré à partir de pyproject.toml
+
+# Core ML
+pandas>=2.2.2
+numpy>=2.0.0
+scikit-learn>=1.5.0
+joblib>=1.4.2
+imbalanced-learn>=0.12.3
+
+# ML Models
+lightgbm>=4.4.0
+xgboost>=2.1.1
+catboost>=1.2.5
+
+# MLOps
+mlflow>=2.16.0
+optuna>=3.6.1
+dvc>=3.63.0
+
+# API & Web
+fastapi>=0.115.0
+uvicorn>=0.30.6
+streamlit>=1.50.0
+
+# Utils
+python-dotenv>=1.0.1
+pyyaml>=6.0.2
+hydra-core>=1.3.2
+loguru>=0.7.2
+matplotlib>=3.9.2
+shap>=0.46.0
+kaggle>=1.7.4.5

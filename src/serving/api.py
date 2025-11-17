@@ -54,26 +54,39 @@ class Record(BaseModel):
 
 @app.on_event("startup")
 def load_artifacts() -> None:
-    """Charge le modèle MLflow, le preprocessor et le cleaner.
+    """Charge le modèle, le preprocessor et le cleaner.
 
-    Stratégie de fallback:
-    - Essaie de charger le modèle depuis MLflow registry
-    - Si échec, charge model.joblib depuis PROCESSED_DIR
+    Stratégie:
+    - Si USE_LOCAL_ARTIFACTS=true : charge directement depuis PROCESSED_DIR
+    - Sinon: essaie MLflow puis fallback vers PROCESSED_DIR
     """
     global model, preprocessor, cleaner
 
-    # Chargement du modèle avec fallback
-    try:
-        model = mlflow.sklearn.load_model(MODEL_URI)
-        print(f"✓ Modèle chargé depuis MLflow: {MODEL_URI}")
-    except Exception as e:
-        print(f"⚠ Échec chargement MLflow ({MODEL_URI}): {e}")
-        # Fallback: charger le modèle depuis PROCESSED_DIR
+    use_local = os.getenv("USE_LOCAL_ARTIFACTS", "false").lower() == "true"
+
+    # Chargement du modèle
+    if use_local:
+        # Mode local direct (pour déploiement sans MLflow)
         model_path = PROCESSED_DIR / "model.joblib"
         if not model_path.exists():
-            raise FileNotFoundError(f"Modèle non trouvé ni dans MLflow ni dans {model_path}") from e
+            raise FileNotFoundError(f"Modèle local non trouvé: {model_path}")
         model = joblib.load(model_path)
-        print(f"✓ Modèle chargé depuis fallback: {model_path}")
+        print(f"✓ Modèle chargé depuis artefacts locaux: {model_path}")
+    else:
+        # Mode MLflow avec fallback
+        try:
+            model = mlflow.sklearn.load_model(MODEL_URI)
+            print(f"✓ Modèle chargé depuis MLflow: {MODEL_URI}")
+        except Exception as e:
+            print(f"⚠ Échec chargement MLflow ({MODEL_URI}): {e}")
+            # Fallback: charger le modèle depuis PROCESSED_DIR
+            model_path = PROCESSED_DIR / "model.joblib"
+            if not model_path.exists():
+                raise FileNotFoundError(
+                    f"Modèle non trouvé ni dans MLflow ni dans {model_path}"
+                ) from e
+            model = joblib.load(model_path)
+            print(f"✓ Modèle chargé depuis fallback: {model_path}")
 
     # Chargement du preprocessor et cleaner
     try:

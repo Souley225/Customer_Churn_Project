@@ -1,0 +1,31 @@
+# Configuration Render pour déploiement
+# https://render.com/docs/yaml-spec
+# Utilise les artefacts locaux (data/processed/*.joblib) sans MLflow
+
+services:
+  # API FastAPI
+  - type: web
+    name: telco-churn-api
+    env: python
+    region: frankfurt  # ou oregon, singapore selon votre localisation
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.serving.api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: USE_LOCAL_ARTIFACTS
+        value: "true"
+    healthCheckPath: /docs
+
+  # UI Streamlit
+  - type: web
+    name: telco-churn-ui
+    env: python
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run src/ui/app.py --server.port=$PORT --server.address=0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: USE_LOCAL_ARTIFACTS
+        value: "true"

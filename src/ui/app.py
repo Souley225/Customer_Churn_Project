@@ -62,23 +62,34 @@ DEFAULTS = {
 st.set_page_config(page_title="Telco Churn UI", layout="wide")
 st.title("Telco Customer Churn — Demo")
 
-# Chargement du modèle avec fallback MLflow -> PROCESSED_DIR
-MODEL_URI = os.getenv(
-    "MODEL_URI", os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/Production")
-)
+# Chargement du modèle: mode local ou MLflow avec fallback
+use_local = os.getenv("USE_LOCAL_ARTIFACTS", "false").lower() == "true"
 
-try:
-    model = mlflow.sklearn.load_model(MODEL_URI)
-    st.sidebar.success(f"Modèle chargé depuis MLflow: {MODEL_URI}")
-except Exception as e:
-    st.sidebar.warning(f"Échec chargement MLflow ({MODEL_URI}): {e}")
-    # Fallback: charger le modèle depuis PROCESSED_DIR
+if use_local:
+    # Mode local direct (pour déploiement sans MLflow)
     model_path = PROCESSED_DIR / "model.joblib"
     if not model_path.exists():
-        st.error(f"Modèle non trouvé ni dans MLflow ni dans {model_path}")
+        st.error(f"Modèle local non trouvé: {model_path}")
         st.stop()
     model = joblib.load(model_path)
-    st.sidebar.info(f"Modèle chargé depuis fallback: {model_path}")
+    st.sidebar.info("Modèle chargé depuis artefacts locaux")
+else:
+    # Mode MLflow avec fallback
+    MODEL_URI = os.getenv(
+        "MODEL_URI", os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/Production")
+    )
+    try:
+        model = mlflow.sklearn.load_model(MODEL_URI)
+        st.sidebar.success(f"Modèle chargé depuis MLflow: {MODEL_URI}")
+    except Exception:
+        st.sidebar.warning("Échec chargement MLflow, utilisation du fallback local")
+        # Fallback: charger le modèle depuis PROCESSED_DIR
+        model_path = PROCESSED_DIR / "model.joblib"
+        if not model_path.exists():
+            st.error(f"Modèle non trouvé ni dans MLflow ni dans {model_path}")
+            st.stop()
+        model = joblib.load(model_path)
+        st.sidebar.info(f"Modèle chargé depuis fallback: {model_path}")
 
 st.sidebar.header("Caractéristiques")
 contracts = ["Month-to-month", "One year", "Two year"]
