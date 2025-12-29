@@ -311,7 +311,7 @@ with st.sidebar:
     )
 
 # Contenu principal avec onglets
-tab1, tab2 = st.tabs(["Prediction individuelle", "Scoring par lot"])
+tab1, tab2 = st.tabs(["Prediction individuelle", "batch Scoring (par lot)"])
 
 # ===================== ONGLET 1 : Prediction individuelle =====================
 with tab1:
