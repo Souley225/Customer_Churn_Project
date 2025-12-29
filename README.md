@@ -1,333 +1,360 @@
-# Construction d'un score d'attrition : Telco Customer Churn
+# Score d'Attrition Client — Telco Customer Churn
 
-![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![MLflow](https://img.shields.io/badge/MLflow-tracking-orange.svg)
-![Docker](https://img.shields.io/badge/docker-compose-2496ED.svg)
-![DVC](https://img.shields.io/badge/DVC-pipeline-945DD6.svg)
-
-> **Ce projet implémente un pipeline complet de Machine Learning pour la prédiction du churn client sur le dataset Telco Customer Churn avec une architecture MLOps moderne.**
-
----
-
-## 📊 Présentation générale
-
-Ce projet utilise le dataset public **Telco Customer Churn**  pour construire, suivre, versionner et déployer un modèle de scoring de manière reproductible.
-
-### 🛠️ Stack Technologique
-
-| Outil | Usage |
-|-------|-------|
-| 🔧 **Hydra** | Gestion des configurations |
-| 📦 **DVC** | Versioning des données et reproductibilité |
-| 📈 **MLflow** | Suivi des expériences et registre de modèles |
-| 🎯 **Optuna** | Optimisation des hyperparamètres |
-| 🚀 **FastAPI** | API de prédiction |
-| 🎨 **Streamlit** | Interface utilisateur |
-| 🐳 **Docker Compose** | Déploiement conteneurisé |
-| ⚙️ **GitHub Actions** | CI/CD |
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/Licence-MIT-green?style=for-the-badge" alt="License"/>
+  <img src="https://img.shields.io/badge/MLflow-Tracking-0194E2?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow"/>
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/DVC-Pipeline-945DD6?style=for-the-badge&logo=dvc&logoColor=white" alt="DVC"/>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
+</p>
 
 ---
 
-## 📋 Informations principales
+## Aperçu
 
-?> **Dataset**: `blastchar/telco-customer-churn` (Kaggle)
+Pipeline complet de Machine Learning pour la prédiction du **churn client** (attrition) basé sur le dataset **Telco Customer Churn** de Kaggle. Ce projet implémente les meilleures pratiques **MLOps** : versioning des données, suivi des expériences, optimisation des hyperparamètres et déploiement conteneurisé.
 
-?> **Variable cible**: `Churn` (Yes/No)
-
-- **Langage**: Python 3.12
-- **Gestionnaire de paquets**: Poetry
-- **Suivi d'expériences**: MLflow (local ou distant)
-- **Version des données**: DVC
-- **Optimisation**: Optuna
+**Objectif** : Identifier les clients à risque de résiliation afin d'anticiper les actions de rétention.
 
 ---
 
-## 📁 Structure du projet
+## Stack Technologique
+
+| Composant | Outil | Description |
+|-----------|-------|-------------|
+| Configuration | **Hydra** | Gestion centralisée et modulaire des configurations YAML |
+| Versioning des données | **DVC** | Reproductibilité et traçabilité des pipelines de données |
+| Suivi des expériences | **MLflow** | Logging des métriques, artefacts et registre de modèles |
+| Optimisation | **Optuna** | Recherche automatique des hyperparamètres optimaux |
+| API de prédiction | **FastAPI** | Service REST haute performance avec documentation Swagger |
+| Interface utilisateur | **Streamlit** | Application web interactive pour les prédictions |
+| Conteneurisation | **Docker Compose** | Orchestration multi-services pour le déploiement |
+| CI/CD | **GitHub Actions** | Automatisation des tests et du déploiement |
+
+---
+
+## Informations du Projet
+
+| Élément | Valeur |
+|---------|--------|
+| Dataset | `blastchar/telco-customer-churn` (Kaggle) |
+| Variable cible | `Churn` (Yes/No — binaire) |
+| Langage | Python 3.11+ |
+| Gestionnaire de dépendances | Poetry |
+| Licence | MIT |
+
+---
+
+## Structure du Projet
 
 ```
-mlops-classification-project/
-├── 📄 README.md
-├── 📄 pyproject.toml
-├── 📄 dvc.yaml
-├── 📄 params.yaml
-├── 📄 compose.yaml
-├── 🐳 docker/
-│   ├── Dockerfile.train
-│   └── Dockerfile.app
-├── 📂 src/
-│   ├── data/
-│   ├── features/
-│   ├── models/
-│   ├── serving/
-│   ├── ui/
-│   └── utils/
-├── ⚙️ configs/
+Customer_Churn_Project/
+├── README.md                    # Documentation principale
+├── DEPLOYMENT.md                # Guide de déploiement Render
+├── pyproject.toml               # Configuration Poetry et outils
+├── dvc.yaml                     # Définition du pipeline DVC
+├── compose.yaml                 # Configuration Docker Compose
+├── Makefile                     # Commandes utilitaires
+├── render.yaml                  # Configuration déploiement Render
+│
+├── configs/                     # Configurations Hydra
 │   ├── data.yaml
 │   ├── model.yaml
 │   └── train.yaml
-├── 🧪 tests/
-└── 🔄 .github/workflows/
+│
+├── src/                         # Code source principal
+│   ├── data/                    # Téléchargement et préparation des données
+│   ├── features/                # Feature engineering
+│   ├── models/                  # Entraînement, évaluation, enregistrement
+│   ├── serving/                 # API FastAPI
+│   ├── ui/                      # Application Streamlit
+│   └── utils/                   # Utilitaires partagés
+│
+├── docker/                      # Dockerfiles
+│   ├── Dockerfile.train
+│   └── Dockerfile.app
+│
+├── data/                        # Données (gérées par DVC)
+│   ├── raw/                     # Données brutes
+│   ├── interim/                 # Données intermédiaires
+│   └── processed/               # Données et artefacts prêts à l'emploi
+│
+├── artifacts/                   # Artefacts d'entraînement
+├── mlruns/                      # Expériences MLflow
+├── tests/                       # Tests unitaires
+└── .github/workflows/           # Pipelines CI/CD
 ```
 
 ---
 
-## 💻 Installation locale
+## Installation
 
 ### Prérequis
 
-!> **Attention**: Assurez-vous d'avoir tous les outils suivants installés avant de commencer.
+Avant de commencer, assurez-vous d'avoir installé :
 
-- ✅ Python 3.12 ou plus (recommandé: pyenv)
-- ✅ Poetry
-- ✅ Git
-- ✅ DVC
-- ✅ Docker et Docker Compose
-- ✅ Un compte Kaggle avec le fichier `~/.kaggle/kaggle.json`
+- **Python 3.11** ou supérieur (via pyenv recommandé)
+- **Poetry** pour la gestion des dépendances
+- **Git** et **DVC** pour le versioning
+- **Docker** et **Docker Compose** pour le déploiement local
+- Un **compte Kaggle** avec le fichier d'authentification `~/.kaggle/kaggle.json`
 
-### 🚀 Étapes d'installation
+### Étapes d'installation
 
-#### 1️⃣ Installation de Python
-
-```bash
-# Installation de Python
-pyenv install 3.12.0
-pyenv local 3.12.0
-```
-
-#### 2️⃣ Installation de Poetry
+**1. Cloner le repository**
 
 ```bash
-# Installation de Poetry
-curl -sSL https://install.python-poetry.org | python3 -
-poetry --version
-```
-
-#### 3️⃣ Clonage du projet
-
-```bash
-# Clonage du projet
-git clone https://github.com/Souley225/Customer_Churn_Project
+git clone https://github.com/Souley225/Customer_Churn_Project.git
 cd Customer_Churn_Project
+```
 
-# Installation des dépendances
+**2. Installer les dépendances**
+
+```bash
 poetry install
 ```
 
-#### 4️⃣ Initialisation de DVC
+**3. Configurer les hooks pre-commit**
 
 ```bash
-# Initialisation de DVC
-dvc init
-
-# Vérification des hooks
 poetry run pre-commit install
 ```
 
-### 🔑 Configuration de l'API Kaggle
+**4. Configurer l'API Kaggle**
 
-Créez un fichier `~/.kaggle/kaggle.json` contenant vos identifiants Kaggle:
+Créez le fichier d'authentification Kaggle et sécurisez-le :
 
 ```bash
+# Linux/macOS
 chmod 600 ~/.kaggle/kaggle.json
+
+# Windows (PowerShell)
+# Créez le fichier manuellement dans %USERPROFILE%\.kaggle\kaggle.json
 ```
 
 ---
 
-## 🔄 Exécution du pipeline complet
+## Exécution du Pipeline
 
-Le pipeline est entièrement automatisé via **DVC** et **Hydra**.
+Le pipeline complet est orchestré par **DVC** et configuré via **Hydra**.
+
+### Exécution complète
 
 ```bash
-# Exécution complète du pipeline
 dvc repro
 ```
 
-### 📝 Étapes du pipeline
+### Étapes du pipeline
 
-1. **📥 Téléchargement** des données depuis Kaggle
-2. **✂️ Découpage** en ensembles d'entraînement, validation et test
-3. **🔨 Feature Engineering** (tenure_bucket, num_services, total_spend_proxy, etc.)
-4. **🎯 Entraînement** avec Optuna et suivi MLflow
-5. **📊 Évaluation** du modèle sur le jeu de test
-6. **💾 Enregistrement** du meilleur modèle dans le registre MLflow
+| Étape | Description |
+|-------|-------------|
+| `download` | Téléchargement automatique des données depuis Kaggle |
+| `split` | Découpage en ensembles train/validation/test (70/10/20) |
+| `features` | Feature engineering et transformation des variables |
+| `train` | Entraînement avec optimisation Optuna et logging MLflow |
+| `evaluate` | Évaluation des métriques sur le jeu de test |
+| `register` | Enregistrement du meilleur modèle dans le registre MLflow |
+
+### Nouvelles variables créées
+
+- **tenure_bucket** : Segmentation de l'ancienneté client
+- **num_services** : Nombre total de services souscrits
+- **total_spend_proxy** : Estimation des dépenses cumulées
 
 ---
 
-## 🐳 Lancement des services avec Docker Compose
+## Modèles Utilisés
+
+Le pipeline teste automatiquement plusieurs algorithmes et sélectionne le meilleur :
+
+| Modèle | Description |
+|--------|-------------|
+| LightGBM | Gradient boosting optimisé pour la vitesse |
+| XGBoost | Gradient boosting avec régularisation avancée |
+| CatBoost | Gradient boosting optimisé pour les variables catégorielles |
+| Régression Logistique | Modèle de référence interprétable |
+
+L'optimisation des hyperparamètres est réalisée par **Optuna** avec validation croisée.
+
+---
+
+## Déploiement Local avec Docker
+
+### Lancer les services
 
 ```bash
-# Construction des images Docker
+# Construire les images
 docker compose build
 
-# Lancement de l'infrastructure
+# Démarrer l'infrastructure
 make up
 ```
 
-### 🌐 Services accessibles
+### Services disponibles
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| 📈 **MLflow UI** | [http://localhost:5000](http://localhost:5000) | Interface de suivi des expériences |
-| 🚀 **API FastAPI** | [http://localhost:8000/docs](http://localhost:8000/docs) | Documentation interactive de l'API |
-| 🎨 **Streamlit** | [http://localhost:8501](http://localhost:8501) | Interface utilisateur graphique |
+| MLflow UI | http://localhost:5000 | Suivi des expériences et registre |
+| API FastAPI | http://localhost:8000/docs | Documentation interactive Swagger |
+| Streamlit | http://localhost:8501 | Interface utilisateur graphique |
+
+### Arrêter les services
 
 ```bash
-# Pour arrêter les services
 make down
 ```
 
 ---
 
-## 🔍 Description fonctionnelle du pipeline
+## Utilisation de l'API
 
-### 📥 Téléchargement des données
-Via l'API Kaggle, récupération automatique du dataset.
+### Endpoint de prédiction
 
-### 🧹 Prétraitement
-- Nettoyage des valeurs manquantes
-- Encodage catégoriel
-- Création de nouvelles variables:
-  - `tenure_bucket`: Segmentation de l'ancienneté
-  - `num_services`: Nombre de services souscrits
-  - `total_spend_proxy`: Estimation des dépenses totales
+`POST /predict`
 
-### 🎯 Entraînement
-Sélection automatique du modèle optimal parmi:
-- 🌳 LightGBM
-- 🚀 XGBoost
-- 🐈 CatBoost
-- 📉 Régression Logistique
+### Exemple de requête
 
-Optimisation via **Optuna** pour trouver les meilleurs hyperparamètres.
+```json
+{
+  "gender": "Female",
+  "SeniorCitizen": 0,
+  "Partner": "Yes",
+  "Dependents": "No",
+  "tenure": 12,
+  "PhoneService": "Yes",
+  "MultipleLines": "No",
+  "InternetService": "DSL",
+  "OnlineSecurity": "No",
+  "OnlineBackup": "Yes",
+  "DeviceProtection": "No",
+  "TechSupport": "No",
+  "StreamingTV": "No",
+  "StreamingMovies": "No",
+  "Contract": "Month-to-month",
+  "PaperlessBilling": "Yes",
+  "PaymentMethod": "Electronic check",
+  "MonthlyCharges": 50.0,
+  "TotalCharges": "600.0"
+}
+```
 
-### 📊 Suivi
-Tous les paramètres, métriques et artefacts sont enregistrés dans **MLflow**.
+### Réponse
 
-### ✅ Évaluation
-Test du modèle sur un échantillon indépendant avec métriques détaillées.
-
-### 💾 Enregistrement
-Le meilleur modèle est promu dans le registre **MLflow**.
+```json
+{
+  "churn_probability": 0.72,
+  "prediction": "Yes"
+}
+```
 
 ---
 
-## 🧪 Tests et validation
+## Interface Streamlit
+
+L'application Streamlit permet de :
+
+- Saisir manuellement les caractéristiques d'un client
+- Obtenir instantanément la probabilité de churn
+- Visualiser les facteurs de risque principaux
+- Explorer l'interprétabilité du modèle via SHAP
+
+---
+
+## Tests et Qualité du Code
+
+### Exécuter les tests
 
 ```bash
-# Lancer les tests unitaires
 poetry run pytest -q
+```
 
-# Vérifier la conformité du code
+### Vérifier la conformité du code
+
+```bash
+# Linting et formatage
 poetry run ruff .
 poetry run black --check .
+poetry run isort --check .
+
+# Vérification des types
 poetry run mypy src
 ```
 
 ---
 
-## ☁️ Déploiement cloud (optionnel)
+## Intégration Continue
 
-Pour connecter **MLflow** à un backend distant (S3, GCS ou Azure):
+Les workflows **GitHub Actions** automatisent :
 
-Définissez les variables d'environnement dans un fichier `.env`:
+| Workflow | Description |
+|----------|-------------|
+| Linting | Analyse statique avec Black, Ruff, isort, MyPy |
+| Tests | Exécution des tests unitaires avec Pytest |
+| Build | Construction et publication des images Docker |
+| Validation | Vérification de la reproductibilité du pipeline |
+
+---
+
+## Déploiement Cloud
+
+Pour un déploiement sur **Render**, consultez le guide détaillé : [DEPLOYMENT.md](DEPLOYMENT.md)
+
+Le projet est pré-configuré avec `render.yaml` pour un déploiement en un clic via Blueprint.
+
+### Configuration MLflow distant (optionnel)
+
+Pour connecter MLflow à un backend cloud, définissez les variables dans `.env` :
 
 ```env
-MLFLOW_TRACKING_URI=http://mlflow:5000
-MLFLOW_S3_ENDPOINT_URL=...
+MLFLOW_TRACKING_URI=https://votre-mlflow-server.com
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
 
-Relancez le projet:
-
-```bash
-docker compose up
-```
-
 ---
 
-## 🖥️ Utilisation des interfaces
-
-### 🚀 API FastAPI
-
-**Endpoint principal**: `/predict`
-
-Permet de soumettre un ou plusieurs enregistrements JSON pour obtenir une probabilité de churn.
-
-**Exemple de requête**:
-
-```json
-{
-  "SeniorCitizen": 0,
-  "tenure": 12,
-  "MonthlyCharges": 50.5,
-  "TotalCharges": 606.0,
-  "Contract": "Month-to-month",
-  "PaymentMethod": "Electronic check"
-}
-```
-
-### 🎨 Application Streamlit
-
-Interface graphique intuitive pour:
-- ✏️ Tester des entrées manuelles
-- 📊 Observer la probabilité de churn prédite
-- 📈 Visualiser les facteurs de risque
-
----
-
-## 🔄 Intégration continue (CI/CD)
-
-Les workflows **GitHub Actions** assurent:
-
-- ✅ Analyse statique du code (black, ruff, mypy, isort)
-- ✅ Exécution automatique des tests unitaires
-- ✅ Construction et publication des images Docker
-- ✅ Validation de la reproductibilité du pipeline
-
----
-
-## 📝 Commandes utiles
+## Commandes Utiles
 
 | Commande | Description |
 |----------|-------------|
-| `dvc repro` | Lancer le pipeline complet |
+| `dvc repro` | Exécuter le pipeline complet |
 | `make up` | Démarrer les services Docker |
 | `make down` | Arrêter les services Docker |
 | `make lint` | Vérifier la qualité du code |
 | `make test` | Exécuter les tests unitaires |
-| `poetry run pytest` | Tests avec coverage |
-| `poetry run mlflow ui` | Lancer l'interface MLflow |
+| `poetry run mlflow ui` | Lancer l'interface MLflow locale |
 
 ---
 
-## 📄 Licence
+## Contribution
 
-Le projet est distribué sous licence **MIT**.
+Les contributions sont bienvenues. Pour contribuer :
 
----
+1. Forkez le repository
+2. Créez une branche (`git checkout -b feature/NouvelleFeature`)
+3. Committez vos modifications (`git commit -m 'Ajout de NouvelleFeature'`)
+4. Poussez la branche (`git push origin feature/NouvelleFeature`)
+5. Ouvrez une Pull Request
 
-## 🤝 Contribution
-
-Les contributions sont les bienvenues! N'hésitez pas à:
-
-1. 🍴 Fork le projet
-2. 🌿 Créer une branche (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push vers la branche (`git push origin feature/AmazingFeature`)
-5. 🔃 Ouvrir une Pull Request
+Assurez-vous que les tests passent et que le code respecte les standards de formatage avant de soumettre.
 
 ---
 
-## 📧 Contact
+## Contact
 
-**Projet maintenu par**: [Souley225](https://github.com/Souley225)
+**Auteur** : [Souley225](https://github.com/Souley225)
 
-**Repository**: [Customer_Churn_Project](https://github.com/Souley225/Customer_Churn_Project)
+**Repository** : [Customer_Churn_Project](https://github.com/Souley225/Customer_Churn_Project)
 
 ---
 
-<div align="center">
-  <sub>Construit avec ❤️ en utilisant MLOps best practices</sub>
-</div>
+## Licence
+
+Ce projet est distribué sous licence **MIT**. Voir le fichier `LICENSE` pour plus de détails.
+
+---
+
+<p align="center">
+  <sub>Projet MLOps de prédiction du churn client</sub>
+</p>
