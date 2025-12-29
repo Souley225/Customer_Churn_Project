@@ -1,47 +1,32 @@
-"""
-- Conversion de `TotalCharges` (souvent string avec espaces) -> float,
-coercition des espaces en NaN puis imputation par median. (cf. notebooks Kaggle)
-- Normalisation des catégories "No internet service" / "No phone service" en "No"
-pour réduire la cardinalité.
-- Encodage binaire Yes/No -> 1/0 pour variables binaires.
-- Création de *tenure bins* (groupes quantiles et buckets business),
-très informatifs pour le churn.
-- Comptage des services souscrits (somme de colonnes de service == Yes) -> `num_services`.
-- Interactions métier: `tenure * MonthlyCharges` (approx. dépense cumulée),
-interaction `Contract` x `PaperlessBilling`.
-- Mise à l'échelle robuste (RobustScaler) pour numériques.
-- Encodage catégoriel One-Hot pour nominales;
-Ordinal pour `Contract` (Month-to-month < One year < Two year).
-- Gestion du déséquilibre via class_weight (modèles) et option SMOTE
-sur train uniquement (configurable).
+"""Module de feature engineering pour le dataset Telco Customer Churn.
 
-Toutes les étapes sont réplicables avec Hydra et DVC.
+- Conversion de TotalCharges (souvent string avec espaces) -> float
+- Normalisation des categories "No internet service" / "No phone service" en "No"
+- Encodage binaire Yes/No -> 1/0 pour variables binaires
+- Creation de tenure bins (groupes quantiles et buckets business)
+- Comptage des services souscrits -> num_services
+- Interactions metier: tenure * MonthlyCharges, Contract x PaperlessBilling
+- Mise a l'echelle robuste (RobustScaler) pour numeriques
+- Encodage categoriel One-Hot pour nominales, Ordinal pour Contract
+
+Toutes les etapes sont replicables avec Hydra et DVC.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-import joblib
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, RobustScaler
-
-from src.utils.io import read_csv, to_csv
-from src.utils.logging import logger
-from src.utils.paths import INTERIM_DIR, PROCESSED_DIR
 
 
 class TelcoCleaner(BaseEstimator, TransformerMixin):
-    """Nettoyage et enrichissement spécifiques au dataset Telco.
+    """Nettoyage et enrichissement specifiques au dataset Telco.
 
     - Convertit TotalCharges en float (gestion d'espaces vides)
     - Normalise "No internet/phone service" -> "No"
-    - Crée des features dérivées: tenure buckets, num_services, total_spend_proxy
+    - Cree des features derivees: tenure buckets, num_services, total_spend_proxy
     """
 
     def __init__(self, tenure_bins: tuple[int, ...] = (0, 6, 12, 24, 48, 72)) -> None:
@@ -49,7 +34,7 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
         self.service_cols_: list[str] = []
 
     def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> TelcoCleaner:  # noqa: N803
-        # Identifie colonnes de services (contiennent typiquement Yes/No/No internet service)
+        """Identifie les colonnes de services."""
         svc_candidates = [
             c
             for c in X.columns
@@ -68,13 +53,14 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
                 ]
             )
         ]
-        # Retire quelques colonnes non-service connues
         blacklist = {"PhoneService", "PaperlessBilling"}
         self.service_cols_ = [c for c in svc_candidates if c not in blacklist]
         return self
 
     def transform(self, df_in: pd.DataFrame) -> pd.DataFrame:
+        """Applique le nettoyage et le feature engineering."""
         df = df_in.copy()
+
         # Convertir TotalCharges (espaces -> NaN -> float)
         df["TotalCharges"] = pd.to_numeric(df["TotalCharges"].replace(" ", np.nan), errors="coerce")
 
@@ -87,29 +73,29 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
         for c in bin_cols:
             df[c] = (df[c] == "Yes").astype(int)
 
-        # SeniorCitizen est 0/1 déjà numérique; s'assurer de type int
+        # SeniorCitizen est 0/1 deja numerique
         if "SeniorCitizen" in df.columns:
             df["SeniorCitizen"] = df["SeniorCitizen"].astype(int)
 
-        # Créer tenure buckets
+        # Creer tenure buckets
         if "tenure" in df.columns:
             bins = list(self.tenure_bins) + [np.inf]
             labels = [f"[{bins[i]},{bins[i+1]})" for i in range(len(bins) - 1)]
             df["tenure_bucket"] = pd.cut(df["tenure"], bins=bins, labels=labels, right=False)
 
-        # Compter le nombre de services actifs (Yes)
+        # Compter le nombre de services actifs
         services = [c for c in self.service_cols_ if c in df.columns]
         if services:
             df["num_services"] = df[services].apply(lambda r: int(sum(v == 1 for v in r)), axis=1)
         else:
             df["num_services"] = 0
 
-        # Dépense cumulée proxy
-        if set(["tenure", "MonthlyCharges"]).issubset(df.columns):
+        # Depense cumulee proxy
+        if {"tenure", "MonthlyCharges"}.issubset(df.columns):
             df["total_spend_proxy"] = df["tenure"].fillna(0) * df["MonthlyCharges"].fillna(0)
 
         # Interaction Contract x PaperlessBilling
-        if set(["Contract", "PaperlessBilling"]).issubset(df.columns):
+        if {"Contract", "PaperlessBilling"}.issubset(df.columns):
             df["contract_paperless"] = (
                 df["Contract"].astype(str) + "_" + df["PaperlessBilling"].astype(str)
             )
@@ -119,32 +105,44 @@ class TelcoCleaner(BaseEstimator, TransformerMixin):
 
 @dataclass
 class FeatureConfig:
+    """Configuration pour le feature engineering."""
+
     use_smote: bool = False
 
 
 def build() -> None:
-    """Construit X/y transformés et sauvegarde les splits traités.
+    """Construit X/y transformes et sauvegarde les splits traites.
 
     - Applique TelcoCleaner
-    - Prépare ColumnTransformer (num -> imputer+scaler, cat->imputer+OneHot, contract->ordinal)
-    - Sauvegarde X_*.npy et y_*.npy + CSV transformés pour audit
+    - Prepare ColumnTransformer (num -> imputer+scaler, cat->imputer+OneHot)
+    - Sauvegarde X_*.npy et y_*.npy + CSV transformes pour audit
     """
+    # Imports locaux pour eviter les erreurs lors de l'import de TelcoCleaner
+    import joblib
+    from sklearn.compose import ColumnTransformer
+    from sklearn.impute import SimpleImputer
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, RobustScaler
+
+    from src.utils.io import read_csv, to_csv
+    from src.utils.logging import logger
+    from src.utils.paths import INTERIM_DIR, PROCESSED_DIR
+
     train = read_csv(INTERIM_DIR / "train.csv")
     val = read_csv(INTERIM_DIR / "val.csv")
     test = read_csv(INTERIM_DIR / "test.csv")
 
-    # Nettoyage & enrichissement
+    # Nettoyage et enrichissement
     cleaner = TelcoCleaner()
     train = cleaner.fit_transform(train)
     val = cleaner.transform(val)
     test = cleaner.transform(test)
 
-    # Séparer cible
+    # Separer cible
     target = "Churn"
     y_train = (
         (train[target] == "Yes").astype(int) if train[target].dtype == object else train[target]
     )
-
     y_val = (val[target] == "Yes").astype(int) if val[target].dtype == object else val[target]
     y_test = (test[target] == "Yes").astype(int) if test[target].dtype == object else test[target]
 
@@ -152,12 +150,11 @@ def build() -> None:
     val = val.drop(columns=[target, "customerID"], errors="ignore")
     test = test.drop(columns=[target, "customerID"], errors="ignore")
 
-    # Définir types
+    # Definir types
     numeric_features = train.select_dtypes(include=[np.number]).columns.tolist()
-    # Exclure les binaires déjà encodées de l'OHE
     categorical_features = train.select_dtypes(include=["object", "category"]).columns.tolist()
 
-    # Gérer Contract comme ordinal (mois->1 an->2 ans)
+    # Gerer Contract comme ordinal
     ordinal_cols = [c for c in ["Contract"] if c in train.columns]
     if ordinal_cols:
         categorical_features = [c for c in categorical_features if c not in ordinal_cols]
@@ -204,14 +201,15 @@ def build() -> None:
     x_val = preprocessor.transform(val)
     x_test = preprocessor.transform(test)
 
-    # Sauvegarde du preprocessor ET du cleaner fitté
+    # Sauvegarde du preprocessor ET du cleaner fitte
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     preprocessor_path = PROCESSED_DIR / "preprocessor.joblib"
     cleaner_path = PROCESSED_DIR / "cleaner.joblib"
     joblib.dump(preprocessor, preprocessor_path)
     joblib.dump(cleaner, cleaner_path)
-    logger.info("Preprocessor sauvegardé dans %s", preprocessor_path)
-    logger.info("Cleaner sauvegardé dans %s", cleaner_path)
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    logger.info("Preprocessor sauvegarde dans %s", preprocessor_path)
+    logger.info("Cleaner sauvegarde dans %s", cleaner_path)
+
     np.save(PROCESSED_DIR / "X_train.npy", x_train)
     np.save(PROCESSED_DIR / "X_val.npy", x_val)
     np.save(PROCESSED_DIR / "X_test.npy", x_test)
@@ -224,7 +222,7 @@ def build() -> None:
     to_csv(val, PROCESSED_DIR / "val_transformed_preview.csv")
     to_csv(test, PROCESSED_DIR / "test_transformed_preview.csv")
 
-    logger.info("Features construites et sauvegardées dans data/processed/")
+    logger.info("Features construites et sauvegardees dans data/processed/")
 
 
 if __name__ == "__main__":

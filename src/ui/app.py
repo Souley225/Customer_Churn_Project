@@ -13,8 +13,11 @@ import streamlit as st
 # Ajoute la racine au PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
+# Import obligatoire pour deserialiser cleaner.joblib
+from src.features.build_features import TelcoCleaner
 from src.utils.paths import PROCESSED_DIR
 
+cleaner = TelcoCleaner()
 # Colonnes RAW attendues (avant transformation par TelcoCleaner)
 RAW_COLS = [
     "gender",
