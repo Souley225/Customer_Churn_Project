@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> d88c2932073292078c069f7f886aca3db1e28fbc
 # Score d'Attrition Client — Telco Customer Churn
 
 <p align="center">
@@ -358,3 +362,9 @@ Ce projet est distribue sous licence **MIT**. Voir le fichier `LICENSE` pour plu
 <p align="center">
   <sub>Projet MLOps de prediction du churn client</sub>
 </p>
+<<<<<<< HEAD
+=======
+=======
+
+
+>>>>>>> d88c2932073292078c069f7f886aca3db1e28fbc
