@@ -146,6 +146,10 @@ st.markdown(
         padding: 1rem;
         border-radius: 0 8px 8px 0;
         margin: 1rem 0;
+        color: #1f2937;
+    }
+    .info-card i {
+        color: #667eea;
     }
     .result-card-low {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -153,13 +157,15 @@ st.markdown(
         border-radius: 10px;
         color: white;
         text-align: center;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
     .result-card-medium {
         background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         padding: 1.5rem;
         border-radius: 10px;
-        color: white;
+        color: #1f2937;
         text-align: center;
+        text-shadow: 0 1px 1px rgba(255,255,255,0.3);
     }
     .result-card-high {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
@@ -167,6 +173,7 @@ st.markdown(
         border-radius: 10px;
         color: white;
         text-align: center;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
     .proba-value {
         font-size: 3rem;
@@ -174,31 +181,44 @@ st.markdown(
     }
     .proba-label {
         font-size: 1.1rem;
-        opacity: 0.9;
+        font-weight: 500;
     }
     .recommendation {
-        background: #fef3c7;
-        border-left: 4px solid #f59e0b;
+        background: #fefce8;
+        border-left: 4px solid #ca8a04;
         padding: 1rem;
         border-radius: 0 8px 8px 0;
         margin-top: 1rem;
+        color: #713f12;
+    }
+    .recommendation strong {
+        color: #854d0e;
     }
     .footer {
         text-align: center;
         padding: 2rem;
         margin-top: 3rem;
         border-top: 1px solid #e5e7eb;
-        color: #6b7280;
+        color: #4b5563;
     }
     .footer a {
         color: #667eea;
         text-decoration: none;
+        font-weight: 500;
+    }
+    .footer a:hover {
+        text-decoration: underline;
     }
     .sidebar-info {
         background: #f0f9ff;
         padding: 1rem;
         border-radius: 8px;
         margin-bottom: 1rem;
+        color: #1e40af;
+    }
+    .sidebar-info h3 {
+        color: #1e3a8a;
+        margin: 0;
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
@@ -256,7 +276,7 @@ with st.sidebar:
         Ce projet demontre un **pipeline MLOps complet** pour la prediction
         de l'attrition client (churn) dans le secteur des telecommunications.
 
-        **Competences demontrees :**
+        **contenu du projet :**
         - Pipeline de donnees reproductible (DVC)
         - Suivi des experiences (MLflow)
         - Feature engineering avance
@@ -271,7 +291,7 @@ with st.sidebar:
 
     # Statut du modele
     if source == "local":
-        st.info("Modele charge depuis les artefacts locaux")
+        st.info("")
     elif source == "mlflow":
         st.success("Modele charge depuis MLflow Registry")
     else:
@@ -531,6 +551,10 @@ st.markdown(
             Pipeline complet : DVC | MLflow | FastAPI | Docker | Streamlit
         </p>
         <p>
+            <a href="https://www.linkedin.com/in/souleymanes-sall" target="_blank">
+                <i class="fab fa-linkedin"></i> LinkedIn
+            </a>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
             <a href="https://github.com/Souley225/Customer_Churn_Project" target="_blank">
                 <i class="fab fa-github"></i> Repository GitHub
             </a>
