@@ -3,6 +3,7 @@
 # ======================================================================
 !/src/data/         # Garde le dossier src/data/ (et tout ce qu'il contient)
 artifacts/
+*.devcontainer/
 
 mlruns/
 .dvc/cache/
