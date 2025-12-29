@@ -12,6 +12,28 @@
 
 ---
 
+## Demo en Ligne
+
+<p align="center">
+  <a href="https://customer-churn-project-2-zlzb.onrender.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Tester_la_Demo-En_Ligne-667eea?style=for-the-badge&logo=streamlit&logoColor=white" alt="Demo"/>
+  </a>
+</p>
+
+| Element | Lien |
+|---------|------|
+| Application Streamlit | [https://customer-churn-project-2-zlzb.onrender.com/](https://customer-churn-project-2-zlzb.onrender.com/) |
+
+> **Note** : L'application est hebergee sur Render (plan gratuit). Le premier chargement peut prendre quelques secondes si le service est en veille.
+
+**Pour tester la demo :**
+1. Cliquez sur le lien ci-dessus
+2. Renseignez les caracteristiques d'un client (anciennete, charges, type de contrat)
+3. Cliquez sur "Calculer le risque de churn" pour obtenir la prediction
+4. Explorez l'onglet "Scoring par lot" pour tester avec un fichier CSV
+
+---
+
 ## Apercu
 
 Pipeline complet de Machine Learning pour la prediction du **churn client** (attrition) base sur le dataset **Telco Customer Churn** de Kaggle. Ce projet implemente les meilleures pratiques **MLOps** : versioning des donnees, suivi des experiences, optimisation des hyperparametres et deploiement conteneurise.
