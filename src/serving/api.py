@@ -1,13 +1,15 @@
-## src/serving/api.py (FastAPI)
 """API FastAPI de scoring.
 
-- Charge le modèle MLflow et le preprocessor
-- Applique TelcoCleaner + preprocessing avant prédiction
+- Charge le modele MLflow et le preprocessor
+- Applique TelcoCleaner + preprocessing avant prediction
 - Expose /predict pour scoring unitaire ou batch
 """
+
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 import joblib
 import mlflow
@@ -15,23 +17,23 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-# Import nécessaire pour le dépickling de cleaner.joblib
+# Import necessaire pour le depickling de cleaner.joblib
 from src.features.build_features import TelcoCleaner  # noqa: F401
 from src.utils.paths import PROCESSED_DIR
 
-app = FastAPI(title="Telco Churn API")
-
-# Utiliser version Production par défaut, ou dernière version disponible
+# Utiliser version Production par defaut, ou derniere version disponible
 MODEL_URI = os.getenv(
     "MODEL_URI", os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/Production")
 )
+
+# Variables globales pour les artefacts
 model = None
 preprocessor = None
 cleaner = None
 
 
 class Record(BaseModel):
-    """Schéma complet des features d'entrée (données brutes client)."""
+    """Schema complet des features d'entree (donnees brutes client)."""
 
     gender: str
     SeniorCitizen: int
@@ -54,11 +56,10 @@ class Record(BaseModel):
     TotalCharges: str | None = None
 
 
-@app.on_event("startup")
-def load_artifacts() -> None:
-    """Charge le modèle, le preprocessor et le cleaner.
+def _load_artifacts() -> None:
+    """Charge le modele, le preprocessor et le cleaner.
 
-    Stratégie:
+    Strategie:
     - Si USE_LOCAL_ARTIFACTS=true : charge directement depuis PROCESSED_DIR
     - Sinon: essaie MLflow puis fallback vers PROCESSED_DIR
     """
@@ -66,29 +67,29 @@ def load_artifacts() -> None:
 
     use_local = os.getenv("USE_LOCAL_ARTIFACTS", "false").lower() == "true"
 
-    # Chargement du modèle
+    # Chargement du modele
     if use_local:
-        # Mode local direct (pour déploiement sans MLflow)
+        # Mode local direct (pour deploiement sans MLflow)
         model_path = PROCESSED_DIR / "model.joblib"
         if not model_path.exists():
-            raise FileNotFoundError(f"Modèle local non trouvé: {model_path}")
+            raise FileNotFoundError(f"Modele local non trouve: {model_path}")
         model = joblib.load(model_path)
-        print(f"✓ Modèle chargé depuis artefacts locaux: {model_path}")
+        print(f"[OK] Modele charge depuis artefacts locaux: {model_path}")
     else:
         # Mode MLflow avec fallback
         try:
             model = mlflow.sklearn.load_model(MODEL_URI)
-            print(f"✓ Modèle chargé depuis MLflow: {MODEL_URI}")
+            print(f"[OK] Modele charge depuis MLflow: {MODEL_URI}")
         except Exception as e:
-            print(f"⚠ Échec chargement MLflow ({MODEL_URI}): {e}")
-            # Fallback: charger le modèle depuis PROCESSED_DIR
+            print(f"[WARN] Echec chargement MLflow ({MODEL_URI}): {e}")
+            # Fallback: charger le modele depuis PROCESSED_DIR
             model_path = PROCESSED_DIR / "model.joblib"
             if not model_path.exists():
                 raise FileNotFoundError(
-                    f"Modèle non trouvé ni dans MLflow ni dans {model_path}"
+                    f"Modele non trouve ni dans MLflow ni dans {model_path}"
                 ) from e
             model = joblib.load(model_path)
-            print(f"✓ Modèle chargé depuis fallback: {model_path}")
+            print(f"[OK] Modele charge depuis fallback: {model_path}")
 
     # Chargement du preprocessor et cleaner
     try:
@@ -96,29 +97,39 @@ def load_artifacts() -> None:
         cleaner_path = PROCESSED_DIR / "cleaner.joblib"
 
         if not preprocessor_path.exists():
-            raise FileNotFoundError(f"Preprocessor non trouvé: {preprocessor_path}")
+            raise FileNotFoundError(f"Preprocessor non trouve: {preprocessor_path}")
         if not cleaner_path.exists():
-            raise FileNotFoundError(f"Cleaner non trouvé: {cleaner_path}")
+            raise FileNotFoundError(f"Cleaner non trouve: {cleaner_path}")
 
         preprocessor = joblib.load(preprocessor_path)
         cleaner = joblib.load(cleaner_path)
-        print(f"✓ Preprocessor et cleaner chargés depuis {PROCESSED_DIR}")
+        print(f"[OK] Preprocessor et cleaner charges depuis {PROCESSED_DIR}")
     except Exception as e:
         raise RuntimeError(f"Erreur chargement artefacts: {e}") from e
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Gestionnaire de cycle de vie de l'application."""
+    _load_artifacts()
+    yield
+
+
+app = FastAPI(title="Telco Churn API", lifespan=lifespan)
+
+
 @app.post("/predict")
 def predict(items: list[Record]) -> list[float]:
-    """Prédiction du risque de churn pour une liste de clients.
+    """Prediction du risque de churn pour une liste de clients.
 
-    Applique le pipeline complet: TelcoCleaner -> Preprocessor -> Modèle
+    Applique le pipeline complet: TelcoCleaner -> Preprocessor -> Modele
     """
     if model is None or preprocessor is None or cleaner is None:
-        raise HTTPException(status_code=500, detail="Artefacts non chargés")
+        raise HTTPException(status_code=500, detail="Artefacts non charges")
 
     try:
         # Conversion en DataFrame
-        df = pd.DataFrame([item.dict() for item in items])
+        df = pd.DataFrame([item.model_dump() for item in items])
 
         # Application du nettoyage
         df_clean = cleaner.transform(df)
@@ -126,8 +137,8 @@ def predict(items: list[Record]) -> list[float]:
         # Application du preprocessing
         x_transformed = preprocessor.transform(df_clean)
 
-        # Prédiction
+        # Prediction
         proba = model.predict_proba(x_transformed)[:, 1].tolist()
         return proba
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erreur prédiction: {str(e)}") from e
+        raise HTTPException(status_code=400, detail=f"Erreur prediction: {str(e)}") from e

@@ -1,5 +1,5 @@
-## src/ui/app.py (Streamlit)
 """UI Streamlit pour scorer interactivement."""
+
 from __future__ import annotations
 
 import os
@@ -13,13 +13,7 @@ import streamlit as st
 # Ajoute la racine au PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-# Import nécessaire pour le dépickling de cleaner.joblib
-from src.features.build_features import TelcoCleaner  # noqa: F401
 from src.utils.paths import PROCESSED_DIR
-
-# Chargement du preprocessor et cleaner depuis PROCESSED_DIR
-preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
-cleaner = joblib.load(PROCESSED_DIR / "cleaner.joblib")
 
 # Colonnes RAW attendues (avant transformation par TelcoCleaner)
 RAW_COLS = [
@@ -44,7 +38,7 @@ RAW_COLS = [
     "TotalCharges",
 ]
 
-# Valeurs par défaut pour les features non saisies
+# Valeurs par defaut pour les features non saisies
 DEFAULTS = {
     "gender": "Female",
     "SeniorCitizen": 0,
@@ -61,39 +55,56 @@ DEFAULTS = {
     "StreamingMovies": "No",
     "PaymentMethod": "Electronic check",
 }
-st.set_page_config(page_title="Telco Churn UI", layout="wide")
-st.title("Telco Customer Churn — Demo")
 
-# Chargement du modèle: mode local ou MLflow avec fallback
-use_local = os.getenv("USE_LOCAL_ARTIFACTS", "false").lower() == "true"
 
-if use_local:
-    # Mode local direct (pour déploiement sans MLflow)
-    model_path = PROCESSED_DIR / "model.joblib"
-    if not model_path.exists():
-        st.error(f"Modèle local non trouvé: {model_path}")
-        st.stop()
-    model = joblib.load(model_path)
-    st.sidebar.info("Modèle chargé depuis artefacts locaux")
-else:
-    # Mode MLflow avec fallback
-    MODEL_URI = os.getenv(
+@st.cache_resource
+def load_artifacts() -> tuple:
+    """Charge les artefacts de prediction (preprocessor, cleaner, model)."""
+    preprocessor = joblib.load(PROCESSED_DIR / "preprocessor.joblib")
+    cleaner = joblib.load(PROCESSED_DIR / "cleaner.joblib")
+
+    use_local = os.getenv("USE_LOCAL_ARTIFACTS", "false").lower() == "true"
+    model_uri = os.getenv(
         "MODEL_URI", os.getenv("MLFLOW_MODEL_URI", "models:/telco-churn-classifier/Production")
     )
-    try:
-        model = mlflow.sklearn.load_model(MODEL_URI)
-        st.sidebar.success(f"Modèle chargé depuis MLflow: {MODEL_URI}")
-    except Exception:
-        st.sidebar.warning("Échec chargement MLflow, utilisation du fallback local")
-        # Fallback: charger le modèle depuis PROCESSED_DIR
+
+    if use_local:
         model_path = PROCESSED_DIR / "model.joblib"
         if not model_path.exists():
-            st.error(f"Modèle non trouvé ni dans MLflow ni dans {model_path}")
-            st.stop()
+            raise FileNotFoundError(f"Modele local non trouve: {model_path}")
         model = joblib.load(model_path)
-        st.sidebar.info(f"Modèle chargé depuis fallback: {model_path}")
+        source = "local"
+    else:
+        try:
+            model = mlflow.sklearn.load_model(model_uri)
+            source = "mlflow"
+        except Exception:
+            model_path = PROCESSED_DIR / "model.joblib"
+            if not model_path.exists():
+                raise FileNotFoundError(f"Modèle non trouvé : {model_path}") from None
+            model = joblib.load(model_path)
+            source = "fallback"
+    return preprocessor, cleaner, model, source
 
-st.sidebar.header("Caractéristiques")
+
+# Configuration de la page
+st.set_page_config(page_title="Telco Churn UI", layout="wide")
+st.title("Telco Customer Churn - Demo")
+
+# Chargement des artefacts
+try:
+    preprocessor, cleaner, model, source = load_artifacts()
+    if source == "local":
+        st.sidebar.info("Modele charge depuis artefacts locaux")
+    elif source == "mlflow":
+        st.sidebar.success("Modele charge depuis MLflow")
+    else:
+        st.sidebar.warning("Modele charge depuis fallback local")
+except FileNotFoundError as e:
+    st.error(str(e))
+    st.stop()
+
+st.sidebar.header("Caracteristiques")
 contracts = ["Month-to-month", "One year", "Two year"]
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -106,8 +117,8 @@ with col3:
 contract = st.selectbox("Contract", contracts)
 paperless = st.selectbox("PaperlessBilling", ["Yes", "No"])
 
-if st.button("Prédire le risque de churn"):
-    # Création du dictionnaire avec features RAW
+if st.button("Predire le risque de churn"):
+    # Creation du dictionnaire avec features RAW
     raw = DEFAULTS.copy()
     raw.update(
         {
@@ -121,15 +132,15 @@ if st.button("Prédire le risque de churn"):
     # DataFrame avec colonnes RAW uniquement
     sample_raw = pd.DataFrame([{c: raw[c] for c in RAW_COLS}])
 
-    # Application du pipeline complet: cleaner -> preprocessor -> modèle
+    # Application du pipeline complet: cleaner -> preprocessor -> modele
     sample_clean = cleaner.transform(sample_raw)
     sample_proc = preprocessor.transform(sample_clean)
     proba = model.predict_proba(sample_proc)[:, 1][0]
-    st.metric("Probabilité de churn", f"{proba:.2%}")
+    st.metric("Probabilite de churn", f"{proba:.2%}")
 
 st.markdown("---")
 st.subheader("Scoring batch")
-file = st.file_uploader("CSV avec colonnes client complètes", type=["csv"])
+file = st.file_uploader("CSV avec colonnes client completes", type=["csv"])
 if file is not None:
     df = pd.read_csv(file)
     # Application du pipeline complet
@@ -140,5 +151,5 @@ if file is not None:
     df_out["churn_proba"] = proba
     st.dataframe(df_out.head())
     st.download_button(
-        "Télécharger résultats", df_out.to_csv(index=False).encode(), "predictions.csv"
+        "Telecharger resultats", df_out.to_csv(index=False).encode(), "predictions.csv"
     )
