@@ -295,7 +295,7 @@ with st.sidebar:
     elif source == "mlflow":
         st.success("Modele charge depuis MLflow Registry")
     else:
-        st.warning("Modele charge depuis le fallback local")
+        st.warning("")
 
     st.markdown("---")
 
@@ -560,7 +560,7 @@ st.markdown(
             </a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
             <a href="https://github.com/Souley225" target="_blank">
-                <i class="fas fa-user"></i> Souley225
+                <i class="fas fa-user"></i> Souleymane Sall
             </a>
         </p>
         <p style="font-size: 0.8rem;">
