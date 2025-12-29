@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Score d'Attrition Client — Telco Customer Churn
 
 <p align="center">
@@ -361,4 +361,4 @@ Ce projet est distribué sous licence **MIT**. Voir le fichier `LICENSE` pour pl
 </p>
 =======
 
->>>>>>> 28b1bc9a8733cb411d535cd713bed8dce962e673
+
