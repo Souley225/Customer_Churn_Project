@@ -42,7 +42,7 @@ git push origin main
 
 Une fois déployés, vous recevrez deux URLs :
 - API FastAPI : `https://telco-churn-api.onrender.com`
-- UI Streamlit : `https://telco-churn-ui.onrender.com`
+- UI Streamlit : `https://customer-churn-project-zv7e.onrender.com/`
 
 Vérifiez que tout fonctionne :
 - API : Accédez à `https://telco-churn-api.onrender.com/docs` (Swagger UI)
@@ -121,7 +121,7 @@ Vous devriez recevoir une liste de probabilités de churn.
 
 ### UI Streamlit
 
-1. Accédez à `https://<votre-ui>.onrender.com`
+1. Accédez à `https://customer-churn-project-zv7e.onrender.com/`
 2. Vérifiez que l'interface se charge correctement
 3. Dans la sidebar, vous devriez voir : **"Modèle chargé depuis artefacts locaux"**
 4. Testez une prédiction en modifiant les paramètres

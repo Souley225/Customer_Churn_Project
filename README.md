@@ -40,14 +40,14 @@ Dans le secteur telecom, l'attrition client represente une perte significative d
 ## Demo en Ligne
 
 <p align="center">
-  <a href="https://customer-churn-project-2-zlzb.onrender.com/" target="_blank">
+  <a href="https://customer-churn-project-zv7e.onrender.com/" target="_blank">
     <img src="https://img.shields.io/badge/Tester_la_Demo-En_Ligne-667eea?style=for-the-badge&logo=streamlit&logoColor=white" alt="Demo"/>
   </a>
 </p>
 
 | Element | Lien |
 |---------|------|
-| Application Streamlit | [https://customer-churn-project-2-zlzb.onrender.com/](https://customer-churn-project-2-zlzb.onrender.com/) |
+| Application Streamlit | [https://customer-churn-project-zv7e.onrender.com/](https://customer-churn-project-zv7e.onrender.com/) |
 
 > **Note** : L'application est hebergee sur Render (plan gratuit). Le premier chargement peut prendre quelques secondes si le service est en veille.
 
