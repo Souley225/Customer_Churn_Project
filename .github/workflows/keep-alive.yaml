@@ -1,0 +1,19 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    # Exécute toutes les 14 minutes
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Permet l'exécution manuelle
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render App
+        run: |
+          curl -fsS --retry 3 --retry-delay 5 \
+            "https://customer-churn-project-2-zlzb.onrender.com/" \
+            -o /dev/null \
+            && echo "✅ App pinged successfully" \
+            || echo "⚠️ Ping failed"
