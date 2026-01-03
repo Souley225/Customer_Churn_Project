@@ -12,56 +12,28 @@
 
 ---
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Secteur-Telecom-764ABC?style=flat-square" alt="Secteur"/>
-  <img src="https://img.shields.io/badge/Cas_d'usage-Retention_Client-FF6B6B?style=flat-square" alt="Cas d'usage"/>
-  <img src="https://img.shields.io/badge/Impact-Reduction_du_Churn-28A745?style=flat-square" alt="Impact"/>
-</p>
-
-### Problematique Metier
-
-> Les entreprises telecom perdent en moyenne **25% de leurs revenus** a cause de l'attrition client. Identifier les clients a risque **avant** leur depart permet de declencher des actions de retention ciblees.
-
-### Ce que ce projet demontre
-
-| Competence | Application Concrete |
-|------------|---------------------|
-| **Analyse de donnees** | Exploitation d'un dataset de 7 000+ clients pour identifier les facteurs de depart |
-| **Modelisation predictive** | Creation d'un score de risque avec **precision de 80%+** |
-| **Mise en production** | Application deployee et accessible en ligne, prete a etre utilisee |
-| **Communication des resultats** | Interface intuitive permettant aux equipes metier d'exploiter les predictions |
-
-### Valeur Apportee
-
-<table>
-<tr>
-<td width="50%">
-
-**Avant ce projet**
-- Perte de clients non anticipee
-- Actions de retention generiques et couteuses
-- Decisions basees sur l'intuition
-
-</td>
-<td width="50%">
-
-**Avec ce projet**
-- Identification proactive des clients a risque
-- Campagnes de retention personnalisees
-- Decisions eclairees par les donnees
-
-</td>
-</tr>
-</table>
-
-### Competences Transversales Demontrees
+### Contexte
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Gestion_de_Projet-Livraison_complete-4A90A4?style=flat-square" alt="Gestion de projet"/>
-  <img src="https://img.shields.io/badge/Autonomie-De_l'idee_au_deploiement-E67E22?style=flat-square" alt="Autonomie"/>
-  <img src="https://img.shields.io/badge/Rigueur-Code_teste_et_documente-9B59B6?style=flat-square" alt="Rigueur"/>
-  <img src="https://img.shields.io/badge/Pedagogie-Interface_utilisateur_intuitive-3498DB?style=flat-square" alt="Pedagogie"/>
+  <img src="https://img.shields.io/badge/Secteur-Telecom-667eea?style=flat-square" alt="Secteur"/>
+  <img src="https://img.shields.io/badge/Enjeu-Retention_Client-667eea?style=flat-square" alt="Enjeu"/>
 </p>
+
+Dans le secteur telecom, l'attrition client represente une perte significative de revenus. Ce projet propose une **solution predictive** permettant d'identifier les clients a risque de depart, afin que les equipes commerciales puissent intervenir en amont.
+
+### Solution
+
+| Fonctionnalite | Description |
+|----------------|-------------|
+| **Score de risque** | Chaque client recoit une probabilite de depart, calculee a partir de son historique |
+| **Interface web** | Application accessible en ligne pour consulter les predictions sans competence technique |
+| **Scoring par lot** | Possibilite d'analyser un fichier de clients en une seule operation |
+
+### Resultats
+
+- Precision du modele : **80%+** sur les donnees de test
+- Application **deployee et fonctionnelle** — testable via le lien ci-dessous
+- Pipeline **reproductible** — les resultats peuvent etre regeneres a tout moment
 
 ---
 
