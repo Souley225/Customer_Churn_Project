@@ -13,7 +13,7 @@ jobs:
       - name: Ping Render App
         run: |
           curl -fsS --retry 3 --retry-delay 5 \
-            "https://customer-churn-project-2-zlzb.onrender.com/" \
+            "https://customer-churn-project-zv7e.onrender.com/" \
             -o /dev/null \
             && echo "✅ App pinged successfully" \
             || echo "⚠️ Ping failed"
