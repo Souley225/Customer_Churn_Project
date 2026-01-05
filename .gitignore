@@ -19,6 +19,7 @@ mlruns/
 data/raw/
 *.zip
 *.claude
+.devcontainer
 
 # Exception: inclure les artefacts de fallback pour déploiement
 !data/processed/*.joblib
