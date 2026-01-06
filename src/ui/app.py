@@ -96,10 +96,10 @@ st.set_page_config(
     page_title="Prediction Churn Client | Projet MLOps",
     page_icon="https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/python.svg",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",  # Collapsed by default for mobile
 )
 
-# CSS personnalise pour un design professionnel
+# CSS personnalise pour un design professionnel + responsive mobile
 st.markdown(
     """
     <style>
@@ -225,6 +225,142 @@ st.markdown(
     }
     .stTabs [data-baseweb="tab"] {
         padding: 1rem 2rem;
+    }
+
+    /* ==================== MOBILE RESPONSIVE STYLES ==================== */
+    @media (max-width: 768px) {
+        /* Header - smaller and more compact */
+        .main-header {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+        .main-title {
+            font-size: 1.4rem;
+            line-height: 1.3;
+        }
+        .main-subtitle {
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        .tech-badge {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+            margin: 0.15rem;
+        }
+
+        /* Section headers */
+        .section-header {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.8rem 0;
+        }
+
+        /* Info cards - more compact */
+        .info-card {
+            padding: 0.8rem;
+            font-size: 0.9rem;
+            margin: 0.8rem 0;
+        }
+
+        /* Result cards - responsive sizing */
+        .proba-value {
+            font-size: 2.2rem;
+        }
+        .proba-label {
+            font-size: 0.95rem;
+        }
+        .result-card-low,
+        .result-card-medium,
+        .result-card-high {
+            padding: 1rem;
+        }
+
+        /* Recommendation box */
+        .recommendation {
+            padding: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        /* Footer - stacked layout */
+        .footer {
+            padding: 1.5rem 1rem;
+            margin-top: 2rem;
+        }
+        .footer p {
+            font-size: 0.85rem;
+        }
+
+        /* Tabs - compact for mobile */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        /* Streamlit elements - larger touch targets */
+        .stButton > button {
+            padding: 0.8rem 1.5rem !important;
+            font-size: 1rem !important;
+            min-height: 48px !important;
+        }
+        .stNumberInput input,
+        .stSelectbox > div > div {
+            min-height: 48px !important;
+            font-size: 1rem !important;
+        }
+
+        /* Stack columns vertically on mobile */
+        [data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+        }
+
+        /* File uploader */
+        .stFileUploader > div {
+            padding: 1rem !important;
+        }
+
+        /* Metrics - better mobile display */
+        [data-testid="stMetricValue"] {
+            font-size: 1.5rem !important;
+        }
+        [data-testid="stMetricLabel"] {
+            font-size: 0.85rem !important;
+        }
+
+        /* Download button */
+        .stDownloadButton > button {
+            width: 100% !important;
+            min-height: 48px !important;
+        }
+
+        /* Data tables - horizontal scroll */
+        .stDataFrame {
+            overflow-x: auto !important;
+        }
+    }
+
+    /* Extra small devices (phones in portrait) */
+    @media (max-width: 480px) {
+        .main-header {
+            padding: 0.8rem;
+        }
+        .main-title {
+            font-size: 1.2rem;
+        }
+        .main-subtitle {
+            font-size: 0.8rem;
+        }
+        .tech-badge {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+        }
+        .proba-value {
+            font-size: 1.8rem;
+        }
     }
     </style>
     """,
