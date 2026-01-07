@@ -9,6 +9,8 @@ mlruns/
 .dvc/cache/
 .dvc/tmp/
 *.csv
+# Exception: include sample CSV for batch scoring demo
+!data/synthetic_customers.csv
 
 # Exclusion par défaut des artefacts de modèle
 *.h5
