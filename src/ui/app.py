@@ -362,6 +362,21 @@ st.markdown(
             font-size: 1.8rem;
         }
     }
+
+    /* Sample download button - prominent styling */
+    .sample-download-btn > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600 !important;
+        padding: 0.8rem 1.5rem !important;
+        border-radius: 8px !important;
+        transition: transform 0.2s, box-shadow 0.2s !important;
+    }
+    .sample-download-btn > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -622,6 +637,21 @@ with tab2:
         """,
         unsafe_allow_html=True,
     )
+
+    # Sample CSV download for testing
+    sample_csv_path = PROCESSED_DIR.parent / "synthetic_customers.csv"
+    if sample_csv_path.exists():
+        with open(sample_csv_path, "rb") as f:
+            sample_data = f.read()
+        st.markdown('<div class="sample-download-btn">', unsafe_allow_html=True)
+        st.download_button(
+            label="Telecharger un fichier exemple pour tester",
+            data=sample_data,
+            file_name="synthetic_customers.csv",
+            mime="text/csv",
+            help="Fichier CSV de test avec 20 clients synthetiques",
+        )
+        st.markdown("</div><br>", unsafe_allow_html=True)
 
     file = st.file_uploader(
         "Selectionnez un fichier CSV",
