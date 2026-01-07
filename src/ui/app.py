@@ -655,8 +655,8 @@ with tab2:
 
     file = st.file_uploader(
         "Selectionnez un fichier CSV",
-        type=["csv"],
-        help="Format attendu : CSV avec colonnes correspondant aux caracteristiques client",
+        type=None,  # No restriction for mobile compatibility
+        help="Format attendu : fichier CSV avec colonnes correspondant aux caracteristiques client",
     )
 
     if file is not None:
