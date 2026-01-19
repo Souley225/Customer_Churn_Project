@@ -350,14 +350,40 @@ Pour un deploiement sur **Render**, consultez le guide detaille : [DEPLOYMENT.md
 
 Le projet est pre-configure avec `render.yaml` pour un deploiement en un clic via Blueprint.
 
-### Configuration MLflow distant (optionnel)
+### Stockage Distant Supabase (S3-compatible)
 
-Pour connecter MLflow a un backend cloud, definissez les variables dans `.env` :
+Le projet utilise **Supabase Storage** comme backend S3-compatible pour DVC et MLflow.
+
+| Composant | Bucket | Usage |
+|-----------|--------|-------|
+| DVC | `s3://dvc-data` | Versioning des donnees |
+| MLflow | `s3://mlflow-artifacts` | Artefacts d'experiences |
+
+**Configuration pour nouveaux contributeurs :**
+
+1. Demandez les credentials S3 au mainteneur du projet
+2. Creez le fichier `.dvc/config.local` :
+
+```ini
+[remote "supabase"]
+    access_key_id = <VOTRE_ACCESS_KEY>
+    secret_access_key = <VOTRE_SECRET_KEY>
+```
+
+3. Ajoutez les variables dans `.env` :
 
 ```env
-MLFLOW_TRACKING_URI=https://votre-mlflow-server.com
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
+AWS_ACCESS_KEY_ID=<VOTRE_ACCESS_KEY>
+AWS_SECRET_ACCESS_KEY=<VOTRE_SECRET_KEY>
+MLFLOW_S3_ENDPOINT_URL=https://ybjfnpppvdbpuivjnghp.supabase.co/storage/v1/s3
+MLFLOW_ARTIFACT_ROOT=s3://mlflow-artifacts
+```
+
+4. Verifiez la configuration :
+
+```bash
+poetry run dvc remote list
+poetry run dvc pull
 ```
 
 ---
