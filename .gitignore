@@ -6,8 +6,6 @@ artifacts/
 *.devcontainer/
 
 mlruns/
-.dvc/cache/
-.dvc/tmp/
 *.csv
 # Exception: include sample CSV for batch scoring demo
 !data/synthetic_customers.csv
@@ -68,7 +66,9 @@ poetry.lock.hcl
 # MLflow / DVC / Hydra
 # ======================================================================
 mlruns/
-.dvc/
+.dvc/cache/
+.dvc/tmp/
+.dvc/config.local
 outputs/
 multirun/
 .hydra/
